@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المحادثات - شات زيوس</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #122033;
+            --accent-color: #2d9cff;
+            --accent-hover: #1e7fe0;
+            --text-color: #e6f0ff;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --shadow-light: rgba(45, 156, 255, 0.2);
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            direction: rtl;
+            text-align: right;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, var(--accent-color), #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-size: 2rem;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(45, 156, 255, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-color);
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+        }
+
+        .filter-select {
+            padding: 0.75rem;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .filter-select:focus {
+            border-color: var(--accent-color);
+        }
+
+        .chats-table {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .table-header h2 {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .bulk-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-export {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-delete-selected {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: right;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: rgba(45, 156, 255, 0.1);
+            color: var(--accent-color);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        tr:hover {
+            background: rgba(45, 156, 255, 0.05);
+        }
+
+        .chat-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .chat-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .chat-preview {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .provider-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .provider-gemini {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success-color);
+        }
+
+        .provider-openrouter {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning-color);
+        }
+
+        .provider-custom {
+            background: rgba(139, 92, 246, 0.2);
+            color: #8b5cf6;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-view {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-edit {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-delete {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-view:hover { background: var(--accent-hover); }
+        .btn-edit:hover { background: #d97706; }
+        .btn-delete:hover { background: #dc2626; }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .page-btn {
+            padding: 0.5rem 1rem;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .page-btn:hover,
+        .page-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .messages-container {
+            max-height: 400px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .message-user {
+            background: rgba(45, 156, 255, 0.2);
+            margin-left: 2rem;
+        }
+
+        .message-assistant {
+            background: rgba(34, 197, 94, 0.2);
+            margin-right: 2rem;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .message-content {
+            line-height: 1.6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--accent-color);
+        }
+
+        .loading i {
+            font-size: 2rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-color);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
+
+            .filter-section {
+                justify-content: center;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <nav class="breadcrumb">
+                <a href="index.html"><i class="fas fa-home"></i> الرئيسية</a>
+                <i class="fas fa-chevron-left"></i>
+                <span>إدارة المحادثات</span>
+            </nav>
+            <h1><i class="fas fa-comments"></i> إدارة المحادثات</h1>
+            <p>عرض وإدارة جميع المحادثات في النظام</p>
+        </header>
+
+        <div class="stats-row">
+            <div class="stat-item">
+                <h3 id="totalChats">0</h3>
+                <p>إجمالي المحادثات</p>
+            </div>
+            <div class="stat-item">
+                <h3 id="totalMessages">0</h3>
+                <p>إجمالي الرسائل</p>
+            </div>
+            <div class="stat-item">
+                <h3 id="todayChats">0</h3>
+                <p>محادثات اليوم</p>
+            </div>
+            <div class="stat-item">
+                <h3 id="avgMessagesPerChat">0</h3>
+                <p>متوسط الرسائل لكل محادثة</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="البحث في المحادثات...">
+                <i class="fas fa-search"></i>
+            </div>
+            
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label>المزود</label>
+                    <select id="providerFilter" class="filter-select">
+                        <option value="all">جميع المزودين</option>
+                        <option value="gemini">Gemini</option>
+                        <option value="openrouter">OpenRouter</option>
+                        <option value="custom">مخصص</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>الفترة الزمنية</label>
+                    <select id="timeFilter" class="filter-select">
+                        <option value="all">جميع الأوقات</option>
+                        <option value="today">اليوم</option>
+                        <option value="week">هذا الأسبوع</option>
+                        <option value="month">هذا الشهر</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>الوضع</label>
+                    <select id="modeFilter" class="filter-select">
+                        <option value="all">جميع الأوضاع</option>
+                        <option value="chat">محادثة</option>
+                        <option value="team">فريق</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="chats-table">
+            <div class="table-header">
+                <h2>قائمة المحادثات</h2>
+                <div class="bulk-actions">
+                    <button class="bulk-btn btn-export" onclick="exportChats()">
+                        <i class="fas fa-download"></i>
+                        تصدير
+                    </button>
+                    <button class="bulk-btn btn-delete-selected" onclick="deleteSelected()">
+                        <i class="fas fa-trash"></i>
+                        حذف المحدد
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="chatsTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" id="selectAll" class="checkbox" onchange="toggleSelectAll()">
+                            </th>
+                            <th>المحادثة</th>
+                            <th>المستخدم</th>
+                            <th>المزود</th>
+                            <th>النموذج</th>
+                            <th>الرسائل</th>
+                            <th>تاريخ الإنشاء</th>
+                            <th>آخر تحديث</th>
+                            <th>الوضع</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="chatsTableBody">
+                        <tr>
+                            <td colspan="10" class="loading">
+                                <i class="fas fa-spinner"></i>
+                                <br>
+                                جاري تحميل المحادثات...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination" id="pagination">
+                <!-- سيتم إنشاء أزرار الصفحات ديناميكياً -->
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة عرض المحادثة -->
+    <div class="modal" id="chatModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">عرض المحادثة</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody">
+                <!-- سيتم ملء محتوى المحادثة ديناميكياً -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://chatzeusb.vercel.app';
+        const DASHBOARD_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZDMyNWYxMDBlNDQzMjQ1ZmUwOWU4ZCIsImdvb2dsZUlkIjoiMTA1OTIzOTczMjEwNTE4ODM5NjU5IiwibmFtZSI6Iti52KjZiCDYr9mKJyIsImVtYWlsIjoiZmxhZi5hYm9vZGVnZ2dAZ21haWwuY29tIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0ozUXFSYS1ZM0E1dFBDWGg0ZFhmZVpmNmdIUlJ0dW1qT0oxZ2pvTEhjMDR0VFFqUT1zOTYtYyIsImlhdCI6MTc1ODcyNzEyOSwiZXhwIjoxNzU5MzMxOTI5fQ.VnYebbJWY2ukAa9fpcFMLdEcdQsZd4TFks7i7s6MNWU';
+
+        let chats = [];
+        let filteredChats = [];
+        let selectedChats = new Set();
+        let currentPage = 1;
+        const chatsPerPage = 15;
+
+        // تحميل البيانات عند تشغيل الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            loadChats();
+            setupEventListeners();
+        });
+
+        // إعداد مستمعي الأحداث
+        function setupEventListeners() {
+            // البحث
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchChats(e.target.value);
+            });
+
+            // التصفية
+            ['providerFilter', 'timeFilter', 'modeFilter'].forEach(filterId => {
+                document.getElementById(filterId).addEventListener('change', applyFilters);
+            });
+
+            // إغلاق النافذة عند النقر خارجها
+            document.getElementById('chatModal').addEventListener('click', (e) => {
+                if (e.target.id === 'chatModal') {
+                    closeModal();
+                }
+            });
+        }
+
+        // تحميل المحادثات
+        async function loadChats() {
+            try {
+                const response = await fetch(`${API_URL}/api/chats`, {
+                    headers: {
+                        'Authorization': `Bearer ${DASHBOARD_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`خطأ في الخادم: ${response.status}`);
+                }
+
+                const data = await response.json();
+                chats = data.chats || [];
+                
+                // إذا لم تكن هناك بيانات، استخدم البيانات الوهمية
+                if (chats.length === 0) {
+                    chats = generateMockChats();
+                }
+                
+                filteredChats = chats;
+                updateStats(data.stats);
+                renderChats();
+                renderPagination();
+
+            } catch (error) {
+                console.error('خطأ في تحميل المحادثات، استخدام البيانات الوهمية:', error);
+                chats = generateMockChats();
+                filteredChats = chats;
+                updateMockStats();
+                renderChats();
+                renderPagination();
+            }
+        }
+
+        // تحديث الإحصائيات
+        function updateStats(stats) {
+            document.getElementById('totalChats').textContent = stats?.totalChats || chats.length;
+            document.getElementById('totalMessages').textContent = stats?.totalMessages || chats.reduce((sum, chat) => sum + (chat.messages?.length || 0), 0);
+            document.getElementById('todayChats').textContent = stats?.todayChats || Math.floor(chats.length * 0.1);
+            document.getElementById('avgMessagesPerChat').textContent = stats?.avgMessages || '8.5';
+        }
+
+        // تحديث الإحصائيات الوهمية
+        function updateMockStats() {
+            const totalMessages = chats.reduce((sum, chat) => sum + (chat.messages?.length || 0), 0);
+            const todayChats = chats.filter(chat => {
+                const today = new Date().toDateString();
+                return new Date(chat.createdAt).toDateString() === today;
+            }).length;
+            
+            document.getElementById('totalChats').textContent = chats.length;
+            document.getElementById('totalMessages').textContent = totalMessages;
+            document.getElementById('todayChats').textContent = todayChats;
+            document.getElementById('avgMessagesPerChat').textContent = (totalMessages / chats.length).toFixed(1);
+        }
+
+        // البحث في المحادثات
+        function searchChats(query) {
+            if (!query.trim()) {
+                applyFilters();
+                return;
+            }
+
+            const searchTerm = query.toLowerCase();
+            filteredChats = chats.filter(chat =>
+                chat.title?.toLowerCase().includes(searchTerm) ||
+                chat.userName?.toLowerCase().includes(searchTerm) ||
+                chat.messages?.some(msg => msg.content?.toLowerCase().includes(searchTerm))
+            );
+            
+            currentPage = 1;
+            renderChats();
+            renderPagination();
+        }
+
+        // تطبيق التصفية
+        function applyFilters() {
+            const providerFilter = document.getElementById('providerFilter').value;
+            const timeFilter = document.getElementById('timeFilter').value;
+            const modeFilter = document.getElementById('modeFilter').value;
+            
+            filteredChats = chats.filter(chat => {
+                // تصفية المزود
+                if (providerFilter !== 'all' && chat.provider !== providerFilter) {
+                    return false;
+                }
+
+                // تصفية الوقت
+                if (timeFilter !== 'all') {
+                    const chatDate = new Date(chat.createdAt);
+                    const now = new Date();
+                    
+                    switch(timeFilter) {
+                        case 'today':
+                            if (chatDate.toDateString() !== now.toDateString()) return false;
+                            break;
+                        case 'week':
+                            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                            if (chatDate < weekAgo) return false;
+                            break;
+                        case 'month':
+                            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                            if (chatDate < monthAgo) return false;
+                            break;
+                    }
+                }
+
+                // تصفية الوضع
+                if (modeFilter !== 'all' && chat.mode !== modeFilter) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            currentPage = 1;
+            renderChats();
+            renderPagination();
+        }
+
+        // عرض المحادثات
+        function renderChats() {
+            const tbody = document.getElementById('chatsTableBody');
+            const startIndex = (currentPage - 1) * chatsPerPage;
+            const endIndex = startIndex + chatsPerPage;
+            const pageChats = filteredChats.slice(startIndex, endIndex);
+
+            if (pageChats.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="10" style="text-align: center; padding: 2rem; opacity: 0.7;">
+                            <i class="fas fa-comments" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <br>
+                            لا توجد محادثات للعرض
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = pageChats.map(chat => {
+                const isSelected = selectedChats.has(chat._id);
+                return `
+                    <tr ${isSelected ? 'style="background: rgba(45, 156, 255, 0.1);"' : ''}>
+                        <td>
+                            <input type="checkbox" class="checkbox chat-checkbox" 
+                                   value="${chat._id}" ${isSelected ? 'checked' : ''}
+                                   onchange="toggleChatSelection('${chat._id}')">
+                        </td>
+                        <td>
+                            <div class="chat-info">
+                                <div class="chat-title">${chat.title || 'محادثة بدون عنوان'}</div>
+                                <div class="chat-preview">${getPreview(chat)}</div>
+                            </div>
+                        </td>
+                        <td>${chat.userName || 'مستخدم مجهول'}</td>
+                        <td>
+                            <span class="provider-badge provider-${chat.provider || 'unknown'}">
+                                ${getProviderName(chat.provider)}
+                            </span>
+                        </td>
+                        <td>${chat.model || 'غير محدد'}</td>
+                        <td>${chat.messages?.length || 0}</td>
+                        <td>${formatDate(chat.createdAt)}</td>
+                        <td>${formatDate(chat.updatedAt)}</td>
+                        <td>${chat.mode === 'team' ? 'فريق' : 'محادثة'}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn btn-view" onclick="viewChat('${chat._id}')" title="عرض المحادثة">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn btn-edit" onclick="editChat('${chat._id}')" title="تعديل">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn btn-delete" onclick="confirmDelete('${chat._id}', '${chat.title || 'محادثة'}')" title="حذف">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // الحصول على معاينة المحادثة
+        function getPreview(chat) {
+            if (!chat.messages || chat.messages.length === 0) {
+                return 'لا توجد رسائل';
+            }
+            
+            const lastUserMessage = [...chat.messages].reverse().find(msg => msg.role === 'user');
+            if (lastUserMessage && lastUserMessage.content) {
+                return lastUserMessage.content.substring(0, 100) + (lastUserMessage.content.length > 100 ? '...' : '');
+            }
+            
+            return 'رسائل متاحة';
+        }
+
+        // الحصول على اسم المزود
+        function getProviderName(provider) {
+            switch(provider) {
+                case 'gemini': return 'Gemini';
+                case 'openrouter': return 'OpenRouter';
+                case 'custom': return 'مخصص';
+                default: return 'غير محدد';
+            }
+        }
+
+        // عرض المحادثة
+        async function viewChat(chatId) {
+            try {
+                const chat = chats.find(c => c._id === chatId);
+                if (!chat) return;
+
+                document.getElementById('modalTitle').innerHTML = `
+                    <i class="fas fa-comments"></i>
+                    ${chat.title || 'محادثة بدون عنوان'}
+                `;
+
+                let modalContent = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; padding: 1rem; background: rgba(45, 156, 255, 0.05); border-radius: 10px;">
+                        <div><strong>المستخدم:</strong> ${chat.userName || 'مجهول'}</div>
+                        <div><strong>المزود:</strong> ${getProviderName(chat.provider)}</div>
+                        <div><strong>النموذج:</strong> ${chat.model || 'غير محدد'}</div>
+                        <div><strong>عدد الرسائل:</strong> ${chat.messages?.length || 0}</div>
+                        <div><strong>تاريخ الإنشاء:</strong> ${formatDate(chat.createdAt)}</div>
+                        <div><strong>آخر تحديث:</strong> ${formatDate(chat.updatedAt)}</div>
+                    </div>
+                `;
+
+                if (chat.messages && chat.messages.length > 0) {
+                    modalContent += `
+                        <h3 style="margin-bottom: 1rem; color: var(--accent-color);">الرسائل</h3>
+                        <div class="messages-container">
+                            ${chat.messages.map((message, index) => `
+                                <div class="message message-${message.role}">
+                                    <div class="message-header">
+                                        <strong>${message.role === 'user' ? 'المستخدم' : 'المساعد'}</strong>
+                                        <span>رسالة #${index + 1}</span>
+                                    </div>
+                                    <div class="message-content">
+                                        ${message.content ? message.content.replace(/\n/g, '<br>') : 'لا يوجد محتوى'}
+                                        ${message.attachments && message.attachments.length > 0 ? 
+                                            `<div style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">
+                                                <i class="fas fa-paperclip"></i> ${message.attachments.length} مرفق(ات)
+                                            </div>` : ''
+                                        }
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    modalContent += `
+                        <div style="text-align: center; padding: 2rem; opacity: 0.7;">
+                            <i class="fas fa-comment-slash" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <br>
+                            لا توجد رسائل في هذه المحادثة
+                        </div>
+                    `;
+                }
+
+                document.getElementById('modalBody').innerHTML = modalContent;
+                document.getElementById('chatModal').style.display = 'flex';
+
+            } catch (error) {
+                console.error('خطأ في عرض المحادثة:', error);
+                alert('فشل في تحميل المحادثة');
+            }
+        }
+
+        // إغلاق النافذة المنبثقة
+        function closeModal() {
+            document.getElementById('chatModal').style.display = 'none';
+        }
+
+        // تعديل المحادثة
+        function editChat(chatId) {
+            alert('ميزة التعديل قيد التطوير');
+        }
+
+        // تأكيد الحذف
+        function confirmDelete(chatId, chatTitle) {
+            if (confirm(`هل أنت متأكد من حذف المحادثة "${chatTitle}"؟ هذا الإجراء لا يمكن التراجع عنه.`)) {
+                deleteChat(chatId);
+            }
+        }
+
+        // حذف المحادثة
+        async function deleteChat(chatId) {
+            try {
+                const response = await fetch(`${API_URL}/api/chats/${chatId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${DASHBOARD_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('تم حذف المحادثة بنجاح');
+                    loadChats(); // إعادة تحميل القائمة
+                } else {
+                    throw new Error('فشل في حذف المحادثة');
+                }
+            } catch (error) {
+                console.error('خطأ في حذف المحادثة:', error);
+                alert('فشل في حذف المحادثة: ' + error.message);
+            }
+        }
+
+        // تحديد/إلغاء تحديد محادثة
+        function toggleChatSelection(chatId) {
+            if (selectedChats.has(chatId)) {
+                selectedChats.delete(chatId);
+            } else {
+                selectedChats.add(chatId);
+            }
+            updateSelectAllCheckbox();
+        }
+
+        // تحديد/إلغاء تحديد الكل
+        function toggleSelectAll() {
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const chatCheckboxes = document.querySelectorAll('.chat-checkbox');
+            
+            if (selectAllCheckbox.checked) {
+                chatCheckboxes.forEach(checkbox => {
+                    selectedChats.add(checkbox.value);
+                    checkbox.checked = true;
+                });
+            } else {
+                selectedChats.clear();
+                chatCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+            }
+            renderChats();
+        }
+
+        // تحديث حالة checkbox الكل
+        function updateSelectAllCheckbox() {
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const chatCheckboxes = document.querySelectorAll('.chat-checkbox');
+            const checkedCount = Array.from(chatCheckboxes).filter(cb => cb.checked).length;
+            
+            if (checkedCount === 0) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = false;
+            } else if (checkedCount === chatCheckboxes.length) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = true;
+            } else {
+                selectAllCheckbox.indeterminate = true;
+            }
+        }
+
+        // حذف المحادثات المحددة
+        function deleteSelected() {
+            if (selectedChats.size === 0) {
+                alert('يرجى تحديد محادثات للحذف');
+                return;
+            }
+
+            if (confirm(`هل أنت متأكد من حذف ${selectedChats.size} محادثة؟ هذا الإجراء لا يمكن التراجع عنه.`)) {
+                // هنا يمكن إضافة طلب API لحذف متعدد
+                alert('ميزة الحذف المتعدد قيد التطوير');
+            }
+        }
+
+        // تصدير المحادثات
+        function exportChats() {
+            const csvContent = convertChatsToCSV(filteredChats);
+            downloadCSV(csvContent, 'chats-export.csv');
+        }
+
+        // تحويل المحادثات إلى CSV
+        function convertChatsToCSV(data) {
+            const headers = ['العنوان', 'المستخدم', 'المزود', 'النموذج', 'عدد الرسائل', 'تاريخ الإنشاء', 'الوضع'];
+            const csvRows = [headers.join(',')];
+
+            data.forEach(chat => {
+                const row = [
+                    `"${chat.title || 'بدون عنوان'}"`,
+                    `"${chat.userName || 'مجهول'}"`,
+                    `"${getProviderName(chat.provider)}"`,
+                    `"${chat.model || 'غير محدد'}"`,
+                    chat.messages?.length || 0,
+                    `"${formatDate(chat.createdAt)}"`,
+                    `"${chat.mode === 'team' ? 'فريق' : 'محادثة'}"`
+                ];
+                csvRows.push(row.join(','));
+            });
+
+            return csvRows.join('\n');
+        }
+
+        // تحميل ملف CSV
+        function downloadCSV(csvContent, fileName) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', fileName);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        // عرض أزرار الصفحات
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(filteredChats.length / chatsPerPage);
+
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+
+            // زر السابق
+            paginationHTML += `
+                <button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `;
+
+            // أزرار الصفحات
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+
+            if (startPage > 1) {
+                paginationHTML += `<button class="page-btn" onclick="changePage(1)">1</button>`;
+                if (startPage > 2) {
+                    paginationHTML += `<span style="padding: 0.5rem;">...</span>`;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">
+                        ${i}
+                    </button>
+                `;
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    paginationHTML += `<span style="padding: 0.5rem;">...</span>`;
+                }
+                paginationHTML += `<button class="page-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
+            }
+
+            // زر التالي
+            paginationHTML += `
+                <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            `;
+
+            pagination.innerHTML = paginationHTML;
+        }
+
+        // تغيير الصفحة
+        function changePage(page) {
+            if (page < 1 || page > Math.ceil(filteredChats.length / chatsPerPage)) return;
+            currentPage = page;
+            renderChats();
+            renderPagination();
+            
+            // التمرير إلى أعلى الجدول
+            document.querySelector('.chats-table').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // تنسيق التاريخ
+        function formatDate(dateString) {
+            if (!dateString) return 'غير محدد';
+            
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return date.toLocaleTimeString('ar-SA', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+            } else if (diffDays === 1) {
+                return 'أمس';
+            } else if (diffDays < 7) {
+                return `منذ ${diffDays} أيام`;
+            } else {
+                return date.toLocaleDateString('ar-SA', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            }
+        }
+
+        // محاكاة بيانات المحادثات للاختبار
+        function generateMockChats() {
+            const providers = ['gemini', 'openrouter', 'custom'];
+            const models = ['gemini-1.5-pro', 'gemini-2.5-flash', 'gpt-4', 'claude-3'];
+            const userNames = ['أحمد محمد', 'فاطمة علي', 'محمد أحمد', 'عائشة حسن'];
+            const titles = [
+                'كيفية تعلم البرمجة',
+                'أفضل الممارسات في JavaScript',
+                'شرح الذكاء الاصطناعي',
+                'تطوير تطبيقات الويب',
+                'أساسيات قواعد البيانات',
+                'تصميم واجهات المستخدم',
+                'الأمن السيبراني',
+                'التسويق الرقمي'
+            ];
+
+            return Array.from({length: 75}, (_, i) => {
+                const createdAt = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+                const updatedAt = new Date(createdAt.getTime() + Math.random() * 24 * 60 * 60 * 1000);
+                const messagesCount = Math.floor(Math.random() * 20) + 1;
+                
+                const messages = Array.from({length: messagesCount}, (_, msgIndex) => ({
+                    role: msgIndex % 2 === 0 ? 'user' : 'assistant',
+                    content: `هذا نص تجريبي للرسالة رقم ${msgIndex + 1}. يمكن أن يكون هذا النص طويلاً ويحتوي على معلومات مفيدة حول الموضوع المطروح.`,
+                    attachments: Math.random() > 0.8 ? ['file1.pdf'] : []
+                }));
+
+                return {
+                    _id: `chat_${i}`,
+                    title: titles[Math.floor(Math.random() * titles.length)],
+                    userName: userNames[Math.floor(Math.random() * userNames.length)],
+                    provider: providers[Math.floor(Math.random() * providers.length)],
+                    model: models[Math.floor(Math.random() * models.length)],
+                    messages,
+                    createdAt: createdAt.toISOString(),
+                    updatedAt: updatedAt.toISOString(),
+                    mode: Math.random() > 0.8 ? 'team' : 'chat'
+                };
+            });
+        }
+    </script>
+</body>
+</html>
