@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المستخدمين - شات زيوس</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #122033;
+            --accent-color: #2d9cff;
+            --accent-hover: #1e7fe0;
+            --text-color: #e6f0ff;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --shadow-light: rgba(45, 156, 255, 0.2);
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            direction: rtl;
+            text-align: right;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, var(--accent-color), #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(45, 156, 255, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-color);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-size: 2rem;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-item p {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .users-table {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .table-header h2 {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        .export-btn {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            background: #16a34a;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: right;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: rgba(45, 156, 255, 0.1);
+            color: var(--accent-color);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        tr:hover {
+            background: rgba(45, 156, 255, 0.05);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-left: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-email {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-inactive {
+            background: rgba(107, 114, 128, 0.2);
+            color: #9ca3af;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-view {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-delete {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .page-btn {
+            padding: 0.5rem 1rem;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .page-btn:hover,
+        .page-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--accent-color);
+        }
+
+        .loading i {
+            font-size: 2rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: var(--danger-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .user-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .detail-item {
+            background: rgba(45, 156, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(45, 156, 255, 0.1);
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-value {
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
+
+            .filter-buttons {
+                justify-content: center;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 0.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <nav class="breadcrumb">
+                <a href="index.html"><i class="fas fa-home"></i> الرئيسية</a>
+                <i class="fas fa-chevron-left"></i>
+                <span>إدارة المستخدمين</span>
+            </nav>
+            <h1><i class="fas fa-users"></i> إدارة المستخدمين</h1>
+            <p>عرض وإدارة جميع المستخدمين المسجلين في النظام</p>
+        </header>
+
+        <div class="stats-row">
+            <div class="stat-item">
+                <h3 id="totalUsers">0</h3>
+                <p>إجمالي المستخدمين</p>
+            </div>
+            <div class="stat-item">
+                <h3 id="activeUsers">0</h3>
+                <p>المستخدمون النشطون</p>
+            </div>
+            <div class="stat-item">
+                <h3 id="newUsers">0</h3>
+                <p>مستخدمون جدد هذا الشهر</p>
+            </div>
+            <div class="stat-item">
+                <h3 id="avgChatsPerUser">0</h3>
+                <p>متوسط المحادثات لكل مستخدم</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="البحث بالاسم أو البريد الإلكتروني...">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">الكل</button>
+                <button class="filter-btn" data-filter="active">النشطون</button>
+                <button class="filter-btn" data-filter="inactive">غير النشطين</button>
+                <button class="filter-btn" data-filter="recent">جدد</button>
+            </div>
+        </div>
+
+        <div class="users-table">
+            <div class="table-header">
+                <h2>قائمة المستخدمين</h2>
+                <button class="export-btn" onclick="exportUsers()">
+                    <i class="fas fa-download"></i>
+                    تصدير البيانات
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>المستخدم</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>تاريخ التسجيل</th>
+                            <th>المحادثات</th>
+                            <th>الرسائل</th>
+                            <th>آخر نشاط</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="8" class="loading">
+                                <i class="fas fa-spinner"></i>
+                                <br>
+                                جاري تحميل المستخدمين...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination" id="pagination">
+                <!-- سيتم إنشاء أزرار الصفحات ديناميكياً -->
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تفاصيل المستخدم -->
+    <div class="modal" id="userModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">تفاصيل المستخدم</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody">
+                <!-- سيتم ملء التفاصيل ديناميكياً -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://chatzeusb.vercel.app';
+        const DASHBOARD_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZDMyNWYxMDBlNDQzMjQ1ZmUwOWU4ZCIsImdvb2dsZUlkIjoiMTA1OTIzOTczMjEwNTE4ODM5NjU5IiwibmFtZSI6Iti52KjZiCDYr9mKJyIsImVtYWlsIjoiZmxhZi5hYm9vZGVnZ2dAZ21haWwuY29tIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0ozUXFSYS1ZM0E1dFBDWGg0ZFhmZVpmNmdIUlJ0dW1qT0oxZ2pvTEhjMDR0VFFqUT1zOTYtYyIsImlhdCI6MTc1ODcyNzEyOSwiZXhwIjoxNzU5MzMxOTI5fQ.VnYebbJWY2ukAa9fpcFMLdEcdQsZd4TFks7i7s6MNWU';
+
+        let users = [];
+        let filteredUsers = [];
+        let currentPage = 1;
+        const usersPerPage = 20;
+
+        // تحميل البيانات عند تشغيل الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUsers();
+            setupEventListeners();
+        });
+
+        // إعداد مستمعي الأحداث
+        function setupEventListeners() {
+            // البحث
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchUsers(e.target.value);
+            });
+
+            // أزرار التصفية
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    filterUsers(e.target.dataset.filter);
+                });
+            });
+
+            // إغلاق النافذة عند النقر خارجها
+            document.getElementById('userModal').addEventListener('click', (e) => {
+                if (e.target.id === 'userModal') {
+                    closeModal();
+                }
+            });
+        }
+
+        // تحميل المستخدمين
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_URL}/api/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${DASHBOARD_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`خطأ في الخادم: ${response.status}`);
+                }
+
+                const data = await response.json();
+                users = data.users || [];
+                filteredUsers = users;
+                
+                updateStats(data.stats);
+                renderUsers();
+                renderPagination();
+
+            } catch (error) {
+                console.error('خطأ في تحميل المستخدمين:', error);
+                showError('فشل في تحميل بيانات المستخدمين: ' + error.message);
+            }
+        }
+
+        // تحديث الإحصائيات
+        function updateStats(stats) {
+            document.getElementById('totalUsers').textContent = stats?.total || users.length;
+            document.getElementById('activeUsers').textContent = stats?.active || Math.floor(users.length * 0.7);
+            document.getElementById('newUsers').textContent = stats?.newThisMonth || Math.floor(users.length * 0.1);
+            document.getElementById('avgChatsPerUser').textContent = stats?.avgChats || '5.2';
+        }
+
+        // البحث في المستخدمين
+        function searchUsers(query) {
+            if (!query.trim()) {
+                filteredUsers = users;
+            } else {
+                const searchTerm = query.toLowerCase();
+                filteredUsers = users.filter(user =>
+                    user.name.toLowerCase().includes(searchTerm) ||
+                    user.email.toLowerCase().includes(searchTerm)
+                );
+            }
+            currentPage = 1;
+            renderUsers();
+            renderPagination();
+        }
+
+        // تصفية المستخدمين
+        function filterUsers(filter) {
+            const now = new Date();
+            const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+            switch(filter) {
+                case 'active':
+                    filteredUsers = users.filter(user => user.isActive);
+                    break;
+                case 'inactive':
+                    filteredUsers = users.filter(user => !user.isActive);
+                    break;
+                case 'recent':
+                    filteredUsers = users.filter(user => new Date(user.createdAt) > thirtyDaysAgo);
+                    break;
+                default:
+                    filteredUsers = users;
+            }
+            currentPage = 1;
+            renderUsers();
+            renderPagination();
+        }
+
+        // عرض المستخدمين
+        function renderUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            const startIndex = (currentPage - 1) * usersPerPage;
+            const endIndex = startIndex + usersPerPage;
+            const pageUsers = filteredUsers.slice(startIndex, endIndex);
+
+            if (pageUsers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 2rem; opacity: 0.7;">
+                            <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <br>
+                            لا توجد مستخدمون للعرض
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = pageUsers.map(user => `
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            <img src="${user.picture || '/default-avatar.png'}" alt="صورة المستخدم" class="user-avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iMjAiIGZpbGw9IiMyZDljZmYiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeD0iOCIgeT0iOCI+CjxwYXRoIGQ9Im0yMCAyMXYtMmE0IDQgMCAwIDAtNC00aC04YTQgNCAwIDAgMC00IDR2MiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPGNpcmNsZSBjeD0iMTIiIGN5PSI3IiByPSI0IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4KPC9zdmc+Cg=='">
+                            <div class="user-details">
+                                <div class="user-name">${user.name}</div>
+                                <div class="user-email">${user.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${user.email}</td>
+                    <td>${formatDate(user.createdAt)}</td>
+                    <td>${user.chatCount || 0}</td>
+                    <td>${user.messageCount || 0}</td>
+                    <td>${formatDate(user.lastActivity)}</td>
+                    <td>
+                        <span class="status-badge ${user.isActive ? 'status-active' : 'status-inactive'}">
+                            ${user.isActive ? 'نشط' : 'غير نشط'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn btn-view" onclick="viewUser('${user._id}')" title="عرض التفاصيل">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="action-btn btn-delete" onclick="confirmDelete('${user._id}', '${user.name}')" title="حذف المستخدم">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // عرض تفاصيل المستخدم
+        async function viewUser(userId) {
+            try {
+                const user = users.find(u => u._id === userId);
+                if (!user) return;
+
+                // جلب تفاصيل إضافية من الخادم
+                const response = await fetch(`${API_URL}/api/users/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${DASHBOARD_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const detailedUser = response.ok ? await response.json() : user;
+
+                document.getElementById('modalTitle').innerHTML = `
+                    <i class="fas fa-user"></i>
+                    تفاصيل المستخدم: ${detailedUser.name}
+                `;
+
+                document.getElementById('modalBody').innerHTML = `
+                    <div class="user-detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">الاسم الكامل</div>
+                            <div class="detail-value">${detailedUser.name}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">البريد الإلكتروني</div>
+                            <div class="detail-value">${detailedUser.email}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">معرف Google</div>
+                            <div class="detail-value">${detailedUser.googleId}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">تاريخ التسجيل</div>
+                            <div class="detail-value">${formatDate(detailedUser.createdAt)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">آخر تحديث</div>
+                            <div class="detail-value">${formatDate(detailedUser.updatedAt)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">عدد المحادثات</div>
+                            <div class="detail-value">${detailedUser.chatCount || 0}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">عدد الرسائل</div>
+                            <div class="detail-value">${detailedUser.messageCount || 0}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class
