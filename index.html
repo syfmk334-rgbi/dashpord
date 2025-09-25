@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم شات زيوس</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1 class="header-title">لوحة تحكم المطور</h1>
+            <p class="header-subtitle">إحصائيات تطبيق شات زيوس</p>
+        </header>
+
+        <main class="dashboard-main">
+            <div class="stats-grid">
+                
+                <div class="stat-card">
+                    <h2 class="stat-title">إجمالي المستخدمين</h2>
+                    <p id="totalUsers" class="stat-value">...</p>
+                </div>
+
+                <div class="stat-card">
+                    <h2 class="stat-title">إجمالي المحادثات</h2>
+                    <p id="totalChats" class="stat-value">...</p>
+                </div>
+                
+                <div class="stat-card">
+                    <h2 class="stat-title">إجمالي الرسائل</h2>
+                    <p id="totalMessages" class="stat-value">...</p>
+                </div>
+
+                <div class="stat-card">
+                    <h2 class="stat-title">إجمالي الملفات المرفوعة</h2>
+                    <p id="totalUploads" class="stat-value">...</p>
+                </div>
+
+            </div>
+
+            <div class="dashboard-section">
+                <h2 class="section-title">المستخدمون الجدد (آخر 30 يوم)</h2>
+                <div id="usersChartContainer" class="chart-container">
+                    <canvas id="usersChart"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-section">
+                <h2 class="section-title">المحادثات حسب المزود</h2>
+                <div id="chatsChartContainer" class="chart-container">
+                    <canvas id="chatsChart"></canvas>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
