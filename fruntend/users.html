@@ -744,7 +744,293 @@
                 document.getElementById('modalBody').innerHTML = `
                     <div class="user-detail-grid">
                         <div class="detail-item">
-                            <div class="detail-label">الاسم الكامل</div>
+                            <div class="detail-label">الحالة</div>
+                            <div class="detail-value">
+                                <span class="status-badge ${detailedUser.isActive ? 'status-active' : 'status-inactive'}">
+                                    ${detailedUser.isActive ? 'نشط' : 'غير نشط'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${detailedUser.chats ? `
+                        <h3 style="margin: 2rem 0 1rem 0; color: var(--accent-color);">آخر المحادثات</h3>
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            ${detailedUser.chats.slice(0, 5).map(chat => `
+                                <div style="background: rgba(45, 156, 255, 0.05); padding: 1rem; border-radius: 10px; margin-bottom: 0.5rem; border: 1px solid rgba(45, 156, 255, 0.1);">
+                                    <div style="font-weight: 600; margin-bottom: 0.5rem;">${chat.title || 'محادثة بدون عنوان'}</div>
+                                    <div style="font-size: 0.9rem; opacity: 0.7;">
+                                        تاريخ الإنشاء: ${formatDate(chat.createdAt)} | 
+                                        عدد الرسائل: ${chat.messages?.length || 0}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                `;
+
+                document.getElementById('userModal').style.display = 'flex';
+            } catch (error) {
+                console.error('خطأ في جلب تفاصيل المستخدم:', error);
+                alert('فشل في جلب تفاصيل المستخدم');
+            }
+        }
+
+        // إغلاق النافذة المنبثقة
+        function closeModal() {
+            document.getElementById('userModal').style.display = 'none';
+        }
+
+        // تأكيد الحذف
+        function confirmDelete(userId, userName) {
+            if (confirm(`هل أنت متأكد من حذف المستخدم "${userName}"؟ هذا الإجراء لا يمكن التراجع عنه.`)) {
+                deleteUser(userId);
+            }
+        }
+
+        // حذف المستخدم
+        async function deleteUser(userId) {
+            try {
+                const response = await fetch(`${API_URL}/api/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${DASHBOARD_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('تم حذف المستخدم بنجاح');
+                    loadUsers(); // إعادة تحميل القائمة
+                } else {
+                    throw new Error('فشل في حذف المستخدم');
+                }
+            } catch (error) {
+                console.error('خطأ في حذف المستخدم:', error);
+                alert('فشل في حذف المستخدم: ' + error.message);
+            }
+        }
+
+        // عرض أزرار الصفحات
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+
+            // زر السابق
+            paginationHTML += `
+                <button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `;
+
+            // أزرار الصفحات
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+
+            if (startPage > 1) {
+                paginationHTML += `<button class="page-btn" onclick="changePage(1)">1</button>`;
+                if (startPage > 2) {
+                    paginationHTML += `<span style="padding: 0.5rem;">...</span>`;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">
+                        ${i}
+                    </button>
+                `;
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    paginationHTML += `<span style="padding: 0.5rem;">...</span>`;
+                }
+                paginationHTML += `<button class="page-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
+            }
+
+            // زر التالي
+            paginationHTML += `
+                <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            `;
+
+            pagination.innerHTML = paginationHTML;
+        }
+
+        // تغيير الصفحة
+        function changePage(page) {
+            if (page < 1 || page > Math.ceil(filteredUsers.length / usersPerPage)) return;
+            currentPage = page;
+            renderUsers();
+            renderPagination();
+            
+            // التمرير إلى أعلى الجدول
+            document.querySelector('.users-table').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // تصدير البيانات
+        function exportUsers() {
+            const csvContent = convertToCSV(filteredUsers);
+            downloadCSV(csvContent, 'users-export.csv');
+        }
+
+        // تحويل البيانات إلى CSV
+        function convertToCSV(data) {
+            const headers = ['الاسم', 'البريد الإلكتروني', 'تاريخ التسجيل', 'المحادثات', 'الرسائل', 'الحالة'];
+            const csvRows = [headers.join(',')];
+
+            data.forEach(user => {
+                const row = [
+                    `"${user.name}"`,
+                    `"${user.email}"`,
+                    `"${formatDate(user.createdAt)}"`,
+                    user.chatCount || 0,
+                    user.messageCount || 0,
+                    `"${user.isActive ? 'نشط' : 'غير نشط'}"`
+                ];
+                csvRows.push(row.join(','));
+            });
+
+            return csvRows.join('\n');
+        }
+
+        // تحميل ملف CSV
+        function downloadCSV(csvContent, fileName) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', fileName);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        // تنسيق التاريخ
+        function formatDate(dateString) {
+            if (!dateString) return 'غير محدد';
+            
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return 'اليوم';
+            } else if (diffDays === 1) {
+                return 'أمس';
+            } else if (diffDays < 7) {
+                return `منذ ${diffDays} أيام`;
+            } else if (diffDays < 30) {
+                return `منذ ${Math.floor(diffDays / 7)} أسابيع`;
+            } else if (diffDays < 365) {
+                return `منذ ${Math.floor(diffDays / 30)} أشهر`;
+            } else {
+                return date.toLocaleDateString('ar-SA', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+        }
+
+        // عرض رسالة خطأ
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+            
+            document.querySelector('.container').insertBefore(errorDiv, document.querySelector('.stats-row'));
+            
+            // إزالة رسالة الخطأ بعد 5 ثواني
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        // محاكاة بيانات المستخدمين للاختبار (يتم حذفها عند الاتصال بالخادم الحقيقي)
+        function generateMockUsers() {
+            const names = ['أحمد محمد', 'فاطمة علي', 'محمد أحمد', 'عائشة حسن', 'عبدالله محمد', 'خديجة أحمد', 'عمر علي', 'زينب محمد'];
+            const domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'];
+            
+            return Array.from({length: 50}, (_, i) => {
+                const name = names[Math.floor(Math.random() * names.length)];
+                const email = `${name.split(' ')[0].toLowerCase()}${i}@${domains[Math.floor(Math.random() * domains.length)]}`;
+                const createdAt = new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000);
+                
+                return {
+                    _id: `user_${i}`,
+                    name,
+                    email,
+                    googleId: `google_${i}`,
+                    picture: `https://i.pravatar.cc/40?img=${i}`,
+                    createdAt: createdAt.toISOString(),
+                    updatedAt: createdAt.toISOString(),
+                    lastActivity: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    isActive: Math.random() > 0.3,
+                    chatCount: Math.floor(Math.random() * 20),
+                    messageCount: Math.floor(Math.random() * 100)
+                };
+            });
+        }
+
+        // استخدام البيانات الوهمية إذا فشل تحميل البيانات الحقيقية
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_URL}/api/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${DASHBOARD_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`خطأ في الخادم: ${response.status}`);
+                }
+
+                const data = await response.json();
+                users = data.users || [];
+                
+                // إذا لم تكن هناك بيانات، استخدم البيانات الوهمية
+                if (users.length === 0) {
+                    users = generateMockUsers();
+                }
+                
+                filteredUsers = users;
+                updateStats(data.stats);
+                renderUsers();
+                renderPagination();
+
+            } catch (error) {
+                console.error('خطأ في تحميل المستخدمين، استخدام البيانات الوهمية:', error);
+                users = generateMockUsers();
+                filteredUsers = users;
+                updateStats({
+                    total: users.length,
+                    active: users.filter(u => u.isActive).length,
+                    newThisMonth: Math.floor(users.length * 0.1),
+                    avgChats: '5.2'
+                });
+                renderUsers();
+                renderPagination();
+            }
+        }
+    </script>
+</body>
+</html>="detail-label">الاسم الكامل</div>
                             <div class="detail-value">${detailedUser.name}</div>
                         </div>
                         <div class="detail-item">
