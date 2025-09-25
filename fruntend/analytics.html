@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التحليلات المتقدمة - شات زيوس</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #122033;
+            --accent-color: #2d9cff;
+            --accent-hover: #1e7fe0;
+            --text-color: #e6f0ff;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --shadow-light: rgba(45, 156, 255, 0.2);
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #06b6d4;
+            --purple-color: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            direction: rtl;
+            text-align: right;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, var(--accent-color), #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .filters-section {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .filter-select, .filter-input {
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(45, 156, 255, 0.1);
+        }
+
+        .apply-filters-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            align-self: flex-end;
+        }
+
+        .apply-filters-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-color);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px var(--shadow-light);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .stat-icon.users { color: var(--success-color); }
+        .stat-icon.messages { color: var(--warning-color); }
+        .stat-icon.models { color: var(--purple-color); }
+        .stat-icon.growth { color: var(--info-color); }
+        .stat-icon.retention { color: var(--danger-color); }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-title {
+            font-size: 1rem;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .stat-change.positive { color: var(--success-color); }
+        .stat-change.negative { color: var(--danger-color); }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .chart-section {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .chart-container {
+            height: 400px;
+            width: 100%;
+            position: relative;
+        }
+
+        .data-table-section {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: right;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: rgba(45, 156, 255, 0.1);
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: rgba(45, 156, 255, 0.05);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--accent-color);
+        }
+
+        .loading i {
+            font-size: 2rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .export-section {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .export-btn {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .export-btn:hover {
+            background: #16a34a;
+        }
+
+        .error-message {
+            background: var(--danger-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .insight-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .insight-card {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border-right: 4px solid var(--accent-color);
+        }
+
+        .insight-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .insight-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .insight-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <nav class="breadcrumb">
+                <a href="index.html"><i class="fas fa-home"></i> الرئيسية</a>
+                <i class="fas fa-chevron-left"></i>
+                <span>التحليلات المتقدمة</span>
+            </nav>
+            <h1><i class="fas fa-chart-bar"></i> التحليلات المتقدمة</h1>
+            <p>تحليل شامل ومتعمق لبيانات النظام وسلوك المستخدمين</p>
+        </header>
+
+        <!-- قسم الفلاتر -->
+        <section class="filters-section">
+            <h2 class="section-title">
+                <i class="fas fa-filter"></i>
+                فلاتر التحليل
+            </h2>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label>الفترة الزمنية</label>
+                    <select id="timeRangeFilter" class="filter-select">
+                        <option value="7">آخر 7 أيام</option>
+                        <option value="30" selected>آخر 30 يوم</option>
+                        <option value="90">آخر 3 أشهر</option>
+                        <option value="365">آخر سنة</option>
+                        <option value="custom">فترة مخصصة</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>المزود</label>
+                    <select id="providerFilter" class="filter-select">
+                        <option value="all">جميع المزودين</option>
+                        <option value="gemini">Gemini</option>
+                        <option value="openrouter">OpenRouter</option>
+                        <option value="custom">مخصص</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>النموذج</label>
+                    <select id="modelFilter" class="filter-select">
+                        <option value="all">جميع النماذج</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>من تاريخ</label>
+                    <input type="date" id="startDateFilter" class="filter-input">
+                </div>
+                <div class="filter-group">
+                    <label>إلى تاريخ</label>
+                    <input type="date" id="endDateFilter" class="filter-input">
+                </div>
+                <div class="filter-group">
+                    <button class="apply-filters-btn" onclick="applyFilters()">
+                        <i class="fas fa-search"></i>
+                        تطبيق الفلاتر
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- إحصائيات سريعة -->
+        <section class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-icon users">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-value" id="activeUsersCount">0</div>
+                <div class="stat-title">المستخدمون النشطون</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="activeUsersChange">+0%</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon messages">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="stat-value" id="totalInteractions">0</div>
+                <div class="stat-title">إجمالي التفاعلات</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="interactionsChange">+0%</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon models">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="stat-value" id="avgSessionLength">0</div>
+                <div class="stat-title">متوسط طول الجلسة (دقائق)</div>
+                <div class="stat-change">
+                    <span id="sessionLengthChange">--</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon growth">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-value" id="growthRate">0%</div>
+                <div class="stat-title">معدل النمو الشهري</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="growthRateChange">+0%</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon retention">
+                    <i class="fas fa-user-clock"></i>
+                </div>
+                <div class="stat-value" id="retentionRate">0%</div>
+                <div class="stat-title">معدل الاحتفاظ بالمستخدمين</div>
+                <div class="stat-change">
+                    <span id="retentionChange">--</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- الرؤى الذكية -->
+        <section class="insight-cards">
+            <div class="insight-card">
+                <div class="insight-title">أكثر الأوقات نشاطاً</div>
+                <div class="insight-value" id="peakHour">--</div>
+                <div class="insight-description" id="peakHourDesc">يتم تحليل أوقات الذروة...</div>
+            </div>
+
+            <div class="insight-card">
+                <div class="insight-title">النموذج الأكثر استخداماً</div>
+                <div class="insight-value" id="topModel">--</div>
+                <div class="insight-description" id="topModelDesc">يتم تحليل استخدام النماذج...</div>
+            </div>
+
+            <div class="insight-card">
+                <div class="insight-title">متوسط المحادثات لكل مستخدم</div>
+                <div class="insight-value" id="avgChatsPerUser">--</div>
+                <div class="insight-description" id="avgChatsDesc">يتم حساب المتوسط...</div>
+            </div>
+        </section>
+
+        <!-- الرسوم البيانية -->
+        <div class="charts-grid">
+            <!-- نشاط المستخدمين عبر الوقت -->
+            <div class="chart-section">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    نشاط المستخدمين عبر الوقت
+                </h2>
+                <div class="chart-container">
+                    <canvas id="userActivityChart"></canvas>
+                </div>
+            </div>
+
+            <!-- توزيع استخدام النماذج -->
+            <div class="chart-section">
+                <h2 class="section-title">
+                    <i class="fas fa-robot"></i>
+                    توزيع استخدام النماذج
+                </h2>
+                <div class="chart-container">
+                    <canvas id="modelUsageChart"></canvas>
+                </div>
+            </div>
+
+            <!-- نمو المستخدمين -->
+            <div class="chart-section">
+                <h2 class="section-title">
+                    <i class="fas fa-user-plus"></i>
+                    نمو المستخدمين الجدد
+                </h2>
+                <div class="chart-container">
+                    <canvas id="userGrowthChart"></canvas>
+                </div>
+            </div>
+
+            <!-- تحليل الجلسات -->
+            <div class="chart-section">
+                <h2 class="section-title">
+                    <i class="fas fa-clock"></i>
+                    تحليل مدة الجلسات
+                </h2>
+                <div class="chart-container">
+                    <canvas id="sessionAnalysisChart"></canvas>
+                </div>
+            </div>
+
+            <!-- الخريطة الحرارية للنشاط -->
+            <div class="chart-section">
+                <h2 class="section-title">
+                    <i class="fas fa-fire"></i>
+                    الخريطة الحرارية للنشاط الأسبوعي
+                </h2>
+                <div class="chart-container">
+                    <canvas id="heatmapChart"></canvas>
+                </div>
+            </div>
+
+            <!-- تحليل المحتوى -->
+            <div class="chart-section">
+                <h2 class="section-title">
+                    <i class="fas fa-file-alt"></i>
+                    أنواع المحتوى الأكثر استخداماً
+                </h2>
+                <div class="chart-container">
+                    <canvas id="contentTypeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- جدول التحليلات التفصيلية -->
+        <section class="data-table-section">
+            <h2 class="section-title">
+                <i class="fas fa-table"></i>
+                تحليلات تفصيلية للمستخدمين الأكثر نشاطاً
+            </h2>
+            <div class="table-container">
+                <table id="detailedAnalyticsTable">
+                    <thead>
+                        <tr>
+                            <th>المستخدم</th>
+                            <th>المحادثات</th>
+                            <th>الرسائل</th>
+                            <th>الملفات المرفوعة</th>
+                            <th>متوسط طول الجلسة</th>
+                            <th>آخر نشاط</th>
+                            <th>النموذج المفضل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="7" class="loading">
+                                <i class="fas fa-spinner"></i>
+                                <br>
+                                جاري تحميل البيانات التفصيلية...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- قسم التصدير -->
+        <section class="export-section">
+            <button class="export-btn" onclick="exportToPDF()">
+                <i class="fas fa-file-pdf"></i>
+                تصدير PDF
+            </button>
+            <button class="export-btn" onclick="exportToExcel()">
+                <i class="fas fa-file-excel"></i>
+                تصدير Excel
+            </button>
+            <button class="export-btn" onclick="exportToCSV()">
+                <i class="fas fa-file-csv"></i>
+                تصدير CSV
+            </button>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // إعدادات API
+        const API_URL = 'https://chatzeusb.vercel.app';
+        const DASHBOARD_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZDMyNWYxMDBlNDQzMjQ1ZmUwOWU4ZCIsImdvb2dsZUlkIjoiMTA1OTIzOTczMjEwNTE4ODM5NjU5IiwibmFtZSI6Iti52KjZiCDYr9mKJyIsImVtYWlsIjoiZmxhZi5hYm9vZGVnZ2dAZ21haWwuY29tIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0ozUXFSYS1ZM0E1dFBDWGg0ZFhmZVpmNmdIUlJ0dW1qT0oxZ2pvTEhjMDR0VFFqUT1zOTYtYyIsImlhdCI6MTc1ODcyNzEyOSwiZXhwIjoxNzU5MzMxOTI5fQ.VnYebbJWY2ukAa9fpcFMLdEcdQsZd4TFks7i7s6MNWU';
+
+        // متغيرات عامة
+        let analyticsData = {};
+        let charts = {};
+
+        // تحميل البيانات عند بدء الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePage();
+            loadAnalyticsData();
+        });
+
+        // تهيئة الصفحة
+        function initializePage() {
+            // تعيين تواريخ افتراضية
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+            
+            document.getElementById('endDateFilter').value = today.toISOString().split('T')[0];
+            document.getElementById('startDateFilter').value = thirtyDaysAgo.toISOString().split('T')[0];
+
+            // إضافة مستمع لتغيير نوع الفترة
+            document.getElementById('timeRangeFilter').addEventListener('change', handleTimeRangeChange);
+        }
+
+        // معالجة تغيير نوع الفترة الزمنية
+        function handleTimeRangeChange() {
+            const timeRange = document.getElementById('timeRangeFilter').value;
+            const today = new Date();
+            const startDateInput = document.getElementById('startDateFilter');
+            const endDateInput = document.getElementById('endDateFilter');
+
+            if (timeRange === 'custom') {
+                startDateInput.disabled = false;
+                endDateInput.disabled = false;
+            } else {
+                startDateInput.disabled = true;
+                endDateInput.disabled = true;
+
+                const days = parseInt(timeRange);
+                const startDate = new Date(today.getTime() - days * 24 * 60 * 60 * 1000);
+                
+                startDateInput.value = startDate.toISOString().split('T')[0];
+                endDateInput.value = today.toISOString().split('T')[0];
+            }
+        }
+
+        // تحميل بيانات التحليلات
+        async function loadAnalyticsData() {
+            try {
+                console.log('🔄 Loading analytics data...');
+                showLoading(true);
+
+                const response = await fetch(`${API_URL}/api/analytics/advanced`, {
+                    headers: {
+                        'Authorization': `Bearer ${DASHBOARD_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                analyticsData = await response.json();
+                console.log('📊 Analytics data loaded:', analyticsData);
+
+                // تحديث الواجهة
+                updateOverviewStats();
+                updateInsights();
+                updateCharts();
+                updateDetailedTable();
+                populateModelFilter();
+
+            } catch (error) {
+                console.error('❌ Error loading analytics:', error);
+                showError('فشل في تحميل بيانات التحليلات: ' + error.message);
+                
+                // استخدام بيانات تجريبية في حالة الفشل
+                generateMockData();
+                updateOverviewStats();
+                updateInsights();
+                updateCharts();
+                updateDetailedTable();
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // تطبيق الفلاتر
+        function applyFilters() {
+            console.log('🔍 Applying filters...');
+            // هنا يمكن إضافة منطق تطبيق الفلاتر
+            loadAnalyticsData();
+        }
+
+        // تحديث الإحصائيات السريعة
+        function updateOverviewStats() {
+            if (!analyticsData.overview) return;
+
+            const overview = analyticsData.overview;
+            
+            document.getElementById('activeUsersCount').textContent = formatNumber(overview.activeUsers || 0);
+            document.getElementById('totalInteractions').textContent = formatNumber(overview.totalInteractions || 0);
+            document.getElementById('avgSessionLength').textContent = (overview.avgSessionLength || 0).toFixed(1);
+            document.getElementById('growthRate').textContent = (overview.growthRate || 0).toFixed(1) + '%';
+            document.getElementById('retentionRate').textContent = (overview.retentionRate || 0).toFixed(1) + '%';
+
+            // تحديث التغييرات
+            document.getElementById('activeUsersChange').textContent = '+' + (overview.activeUsersChange || 0).toFixed(1) + '%';
+            document.getElementById('interactionsChange').textContent = '+' + (overview.interactionsChange || 0).toFixed(1) + '%';
+            document.getElementById('growthRateChange').textContent = '+' + (overview.growthRateChange || 0).toFixed(1) + '%';
+        }
+
+        // تحديث الرؤى الذكية
+        function updateInsights() {
+            if (!analyticsData.insights) return;
+
+            const insights = analyticsData.insights;
+            
+            document.getElementById('peakHour').textContent = insights.peakHour || '--';
+            document.getElementById('peakHourDesc').textContent = insights.peakHourDesc || 'يتم تحليل أوقات الذروة...';
+            
+            document.getElementById('topModel').textContent = insights.topModel || '--';
+            document.getElementById('topModelDesc').textContent = insights.topModelDesc || 'يتم تحليل استخدام النماذج...';
+            
+            document.getElementById('avgChatsPerUser').textContent = (insights.avgChatsPerUser || 0).toFixed(1);
+            document.getElementById('avgChatsDesc').textContent = insights.avgChatsDesc || 'يتم حساب المتوسط...';
+        }
+
+        // تحديث الرسوم البيانية
+        function updateCharts() {
+            updateUserActivityChart();
+            updateModelUsageChart();
+            updateUserGrowthChart();
+            updateSessionAnalysisChart();
+            updateHeatmapChart();
+            updateContentTypeChart();
+        }
+
+        // رسم نشاط المستخدمين عبر الوقت
+        function updateUserActivityChart() {
+            const ctx = document.getElementById('userActivityChart').getContext('2d');
+            
+            if (charts.userActivity) {
+                charts.userActivity.destroy();
+            }
+
+            const data = analyticsData.userActivity || generateMockTimeSeriesData();
+            
+            charts.userActivity = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'مستخدمون نشطون',
+                        data: data.values,
+                        borderColor: '#2d9cff',
+                        backgroundColor: 'rgba(45, 156, 255, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#2d9cff',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e6f0ff'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.5)'
+                            },
+                            ticks: {
+                                color: '#e6f0ff'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.5)'
+                            },
+                            ticks: {
+                                color: '#e6f0ff'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // رسم استخدام النماذج
+        function updateModelUsageChart() {
+            const ctx = document.getElementById('modelUsageChart').getContext('2d');
+            
+            if (charts.modelUsage) {
+                charts.modelUsage.destroy();
+            }
+
+            const data = analyticsData.modelUsage || {
+                labels: ['Gemini Pro', 'Gemini Flash', 'GPT-4', 'Claude', 'أخرى'],
+                values: [35, 28, 20, 12, 5]
+            };
+
+            const colors = ['#2d9cff', '#22c55e', '#f59e0b', '#8b5cf6', '#ef4444'];
+
+            charts.modelUsage = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.values,
+                        backgroundColor: colors,
+                        borderColor: '#1e293b',
+                        borderWidth: 3,
+                        hoverBorderWidth: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#e6f0ff',
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // رسم نمو المستخدمين
+        function updateUserGrowthChart() {
+            const ctx = document.getElementById('userGrowthChart').getContext('2d');
+            
+            if (charts.userGrowth) {
+                charts.userGrowth.destroy();
+            }
+
+            const data = analyticsData.userGrowth || generateMockGrowthData();
+
+            charts.userGrowth = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'مستخدمون جدد',
+                        data: data.values,
+                        backgroundColor: 'rgba(34, 197, 94, 0.6)',
+                        borderColor: '#22c55e',
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e6f0ff'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.5)'
+                            },
+                            ticks: {
+                                color: '#e6f0ff'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#e6f0ff'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // رسم تحليل الجلسات
+        function updateSessionAnalysisChart() {
+            const ctx = document.getElementById('sessionAnalysisChart').getContext('2d');
+            
+            if (charts.sessionAnalysis) {
+                charts.sessionAnalysis.destroy();
+            }
+
+            const data = analyticsData.sessionAnalysis || {
+                labels: ['0-5 دقائق', '5-15 دقيقة', '15-30 دقيقة', '30-60 دقيقة', '+60 دقيقة'],
+                values: [15, 35, 25, 15, 10]
+            };
+
+            charts.sessionAnalysis = new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.values,
+                        backgroundColor: [
+                            'rgba(45, 156, 255, 0.6)',
+                            'rgba(34, 197, 94, 0.6)',
+                            'rgba(245, 158, 11, 0.6)',
+                            'rgba(139, 92, 246, 0.6)',
+                            'rgba(239, 68, 68, 0.6)'
+                        ],
+                        borderColor: [
+                            '#2d9cff',
+                            '#22c55e',
+                            '#f59e0b',
+                            '#8b5cf6',
+                            '#ef4444'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#e6f0ff',
+                                padding: 20
+                            }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            ticks: {
+                                color: '#e6f0ff',
+                                backdropColor: 'transparent'
+                            },
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.5)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // رسم الخريطة الحرارية
+        function updateHeatmapChart() {
+            const ctx = document.getElementById('heatmapChart').getContext('2d');
+            
+            if (charts.heatmap) {
+                charts.heatmap.destroy();
+            }
+
+            // محاكاة بيانات الخريطة الحرارية
+            const heatmapData = [];
+            const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+            const hours = Array.from({length: 24}, (_, i) => i);
+
+            days.forEach((day, dayIndex) => {
+                hours.forEach(hour => {
+                    heatmapData.push({
+                        x: hour,
+                        y: dayIndex,
+                        v: Math.floor(Math.random() * 100)
+                    });
+                });
+            });
+
+            charts.heatmap = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'نشاط المستخدمين',
+                        data: heatmapData,
+                        backgroundColor: function(context) {
+                            const value = context.parsed.v;
+                            const alpha = value / 100;
+                            return `rgba(45, 156, 255, ${alpha})`;
+                        },
+                        pointRadius: function(context) {
+                            return Math.max(2, context.parsed.v / 10);
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e6f0ff'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'الساعة',
+                                color: '#e6f0ff'
+                            },
+                            ticks: {
+                                color: '#e6f0ff',
+                                callback: function(value) {
+                                    return value + ':00';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.5)'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            title: {
+                                display: true,
+                                text: 'اليوم',
+                                color: '#e6f0ff'
+                            },
+                            ticks: {
+                                color: '#e6f0ff',
+                                callback: function(value) {
+                                    return days[value] || '';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.5)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // رسم أنواع المحتوى
+        function updateContentTypeChart() {
+            const ctx = document.getElementById('contentTypeChart').getContext('2d');
+            
+            if (charts.contentType) {
+                charts.contentType.destroy();
+            }
+
+            const data = analyticsData.contentTypes || {
+                labels: ['نص فقط', 'صور', 'ملفات نصية', 'كود برمجي', 'مستندات', 'أخرى'],
+                values: [45, 25, 15, 8, 5, 2]
+            };
+
+            charts.contentType = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'عدد الاستخدامات',
+                        data: data.values,
+                        backgroundColor: [
+                            'rgba(45, 156, 255, 0.6)',
+                            'rgba(34, 197, 94, 0.6)',
+                            'rgba(245, 158, 11, 0.6)',
+                            'rgba(139, 92, 246, 0.6)',
+                            'rgba(6, 182, 212, 0.6)',
+                            'rgba(239, 68, 68, 0.6)'
+                        ],
+                        borderColor: [
+                            '#2d9cff',
+                            '#22c55e',
+                            '#f59e0b',
+                            '#8b5cf6',
+                            '#06b6d4',
+                            '#ef4444'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.5)'
+                            },
+                            ticks: {
+                                color: '#e6f0ff'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#e6f0ff'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // تحديث الجدول التفصيلي
+        function updateDetailedTable() {
+            const tableBody = document.querySelector('#detailedAnalyticsTable tbody');
+            const data = analyticsData.detailedUsers || generateMockDetailedUsers();
+
+            tableBody.innerHTML = data.map(user => `
+                <tr>
+                    <td>${user.name}</td>
+                    <td>${user.chats}</td>
+                    <td>${user.messages}</td>
+                    <td>${user.uploads}</td>
+                    <td>${user.avgSessionLength} دقيقة</td>
+                    <td>${formatDate(user.lastActivity)}</td>
+                    <td>${user.favoriteModel}</td>
+                </tr>
+            `).join('');
+        }
+
+        // ملء قائمة النماذج في الفلتر
+        function populateModelFilter() {
+            const modelFilter = document.getElementById('modelFilter');
+            const models = analyticsData.availableModels || [
+                'gemini-1.5-pro',
+                'gemini-1.5-flash',
+                'gpt-4',
+                'claude-3-sonnet'
+            ];
+
+            // إضافة النماذج للقائمة
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                modelFilter.appendChild(option);
+            });
+        }
+
+        // دوال التصدير
+        function exportToPDF() {
+            alert('ميزة التصدير إلى PDF قيد التطوير');
+        }
+
+        function exportToExcel() {
+            alert('ميزة التصدير إلى Excel قيد التطوير');
+        }
+
+        function exportToCSV() {
+            const data = analyticsData.detailedUsers || generateMockDetailedUsers();
+            const csvContent = convertToCSV(data);
+            downloadCSV(csvContent, 'analytics-detailed.csv');
+        }
+
+        // تحويل البيانات إلى CSV
+        function convertToCSV(data) {
+            const headers = ['المستخدم', 'المحادثات', 'الرسائل', 'الملفات المرفوعة', 'متوسط طول الجلسة', 'آخر نشاط', 'النموذج المفضل'];
+            const csvRows = [headers.join(',')];
+
+            data.forEach(user => {
+                const row = [
+                    `"${user.name}"`,
+                    user.chats,
+                    user.messages,
+                    user.uploads,
+                    user.avgSessionLength,
+                    `"${formatDate(user.lastActivity)}"`,
+                    `"${user.favoriteModel}"`
+                ];
+                csvRows.push(row.join(','));
+            });
+
+            return csvRows.join('\n');
+        }
+
+        // تحميل ملف CSV
+        function downloadCSV(csvContent, fileName) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', fileName);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        // دوال المساعدة
+        function showLoading(show) {
+            const loadingElements = document.querySelectorAll('.loading');
+            loadingElements.forEach(el => {
+                el.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+            document.querySelector('.container').insertBefore(errorDiv, document.querySelector('.stats-overview'));
+            
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            }
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'غير محدد';
+            
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return 'اليوم';
+            } else if (diffDays === 1) {
+                return 'أمس';
+            } else if (diffDays < 7) {
+                return `منذ ${diffDays} أيام`;
+            } else {
+                return date.toLocaleDateString('ar-SA', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            }
+        }
+
+        // دوال إنشاء البيانات التجريبية
+        function generateMockData() {
+            analyticsData = {
+                overview: {
+                    activeUsers: 1250,
+                    totalInteractions: 15420,
+                    avgSessionLength: 12.5,
+                    growthRate: 8.3,
+                    retentionRate: 76.2,
+                    activeUsersChange: 5.2,
+                    interactionsChange: 12.8,
+                    growthRateChange: 2.1
+                },
+                insights: {
+                    peakHour: '14:00 - 15:00',
+                    peakHourDesc: 'أعلى نشاط يحدث في فترة بعد الظهر',
+                    topModel: 'Gemini 1.5 Pro',
+                    topModelDesc: 'يمثل 35% من إجمالي الاستخدام',
+                    avgChatsPerUser: 8.3,
+                    avgChatsDesc: 'بزيادة 15% عن الشهر الماضي'
+                }
+            };
+        }
+
+        function generateMockTimeSeriesData() {
+            const labels = [];
+            const values = [];
+            
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' }));
+                values.push(Math.floor(Math.random() * 200) + 100);
+            }
+            
+            return { labels, values };
+        }
+
+        function generateMockGrowthData() {
+            const labels = [];
+            const values = [];
+            
+            for (let i = 11; i >= 0; i--) {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                labels.push(date.toLocaleDateString('ar-SA', { year: 'numeric', month: 'short' }));
+                values.push(Math.floor(Math.random() * 50) + 20);
+            }
+            
+            return { labels, values };
+        }
+
+        function generateMockDetailedUsers() {
+            const names = ['أحمد محمد', 'فاطمة علي', 'محمد أحمد', 'عائشة حسن', 'علي حسام', 'نور الدين', 'سارة أحمد', 'يوسف محمود'];
+            const models = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gpt-4', 'claude-3-sonnet'];
+            
+            return Array.from({length: 10}, (_, i) => ({
+                name: names[Math.floor(Math.random() * names.length)],
+                chats: Math.floor(Math.random() * 50) + 10,
+                messages: Math.floor(Math.random() * 500) + 50,
+                uploads: Math.floor(Math.random() * 20),
+                avgSessionLength: (Math.random() * 30 + 5).toFixed(1),
+                lastActivity: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+                favoriteModel: models[Math.floor(Math.random() * models.length)]
+            }));
+        }
+    </script>
+</body>
+</html>
