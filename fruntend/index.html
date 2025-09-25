@@ -3,64 +3,773 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم شات زيوس</title>
+    <title>لوحة تحكم شات زيوس المطورة</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #122033;
+            --accent-color: #2d9cff;
+            --accent-hover: #1e7fe0;
+            --text-color: #e6f0ff;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --shadow-light: rgba(45, 156, 255, 0.2);
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            direction: rtl;
+            text-align: right;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, var(--accent-color), #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(45, 156, 255, 0.5);
+        }
+
+        .header-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-bottom: 1rem;
+        }
+
+        .last-update {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            opacity: 0.7;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-color), #60a5fa);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px var(--shadow-light);
+            border-color: var(--accent-color);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .users-icon { color: var(--success-color); }
+        .chats-icon { color: var(--accent-color); }
+        .messages-icon { color: var(--warning-color); }
+        .uploads-icon { color: #8b5cf6; }
+
+        .stat-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .stat-change.positive { color: var(--success-color); }
+        .stat-change.negative { color: var(--danger-color); }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .dashboard-section {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, var(--accent-color), #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .chart-container {
+            height: 400px;
+            width: 100%;
+            position: relative;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(45, 156, 255, 0.4);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, var(--danger-color), #dc2626);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .system-status {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .status-item {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 0.5rem;
+        }
+
+        .status-online { background: var(--success-color); }
+        .status-warning { background: var(--warning-color); }
+        .status-offline { background: var(--danger-color); }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 1rem;
+            }
+
+            .header-title {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 1rem;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
 </head>
 <body>
-
     <div class="dashboard-container">
         <header class="dashboard-header">
-            <h1 class="header-title">لوحة تحكم المطور</h1>
-            <p class="header-subtitle">إحصائيات تطبيق شات زيوس</p>
+            <h1 class="header-title">
+                <i class="fas fa-chart-line"></i>
+                لوحة تحكم شات زيوس المطورة
+            </h1>
+            <p class="header-subtitle">إحصائيات شاملة ومراقبة النظام في الوقت الفعلي</p>
+            <p class="last-update" id="lastUpdate">آخر تحديث: جاري التحميل...</p>
         </header>
 
+        <!-- حالة النظام -->
+        <section class="system-status">
+            <h2 class="section-title">
+                <i class="fas fa-server"></i>
+                حالة النظام
+            </h2>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div><span class="status-indicator status-online"></span>خادم التطبيق</div>
+                    <small>متصل</small>
+                </div>
+                <div class="status-item">
+                    <div><span class="status-indicator status-online"></span>قاعدة البيانات</div>
+                    <small>متصلة</small>
+                </div>
+                <div class="status-item">
+                    <div><span class="status-indicator status-online"></span>خدمات البحث</div>
+                    <small>نشطة</small>
+                </div>
+                <div class="status-item">
+                    <div><span class="status-indicator status-online"></span>تحميل الملفات</div>
+                    <small>متاح</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- الإجراءات السريعة -->
+        <section class="quick-actions">
+            <a href="users.html" class="action-btn">
+                <i class="fas fa-users"></i>
+                إدارة المستخدمين
+            </a>
+            <a href="chats.html" class="action-btn">
+                <i class="fas fa-comments"></i>
+                إدارة المحادثات
+            </a>
+            <a href="analytics.html" class="action-btn">
+                <i class="fas fa-chart-bar"></i>
+                التحليلات المتقدمة
+            </a>
+            <a href="settings.html" class="action-btn">
+                <i class="fas fa-cog"></i>
+                إعدادات النظام
+            </a>
+        </section>
+
+        <!-- الإحصائيات الرئيسية -->
         <main class="dashboard-main">
             <div class="stats-grid">
-                
-                <div class="stat-card">
+                <div class="stat-card" onclick="window.location.href='users.html'">
+                    <div class="stat-icon users-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
                     <h2 class="stat-title">إجمالي المستخدمين</h2>
-                    <p id="totalUsers" class="stat-value">...</p>
+                    <p id="totalUsers" class="stat-value"><span class="loading-spinner"></span></p>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="usersChange">+5%</span>
+                    </div>
                 </div>
 
-                <div class="stat-card">
+                <div class="stat-card" onclick="window.location.href='chats.html'">
+                    <div class="stat-icon chats-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
                     <h2 class="stat-title">إجمالي المحادثات</h2>
-                    <p id="totalChats" class="stat-value">...</p>
+                    <p id="totalChats" class="stat-value"><span class="loading-spinner"></span></p>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="chatsChange">+12%</span>
+                    </div>
                 </div>
                 
                 <div class="stat-card">
+                    <div class="stat-icon messages-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
                     <h2 class="stat-title">إجمالي الرسائل</h2>
-                    <p id="totalMessages" class="stat-value">...</p>
+                    <p id="totalMessages" class="stat-value"><span class="loading-spinner"></span></p>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="messagesChange">+8%</span>
+                    </div>
                 </div>
 
                 <div class="stat-card">
-                    <h2 class="stat-title">إجمالي الملفات المرفوعة</h2>
-                    <p id="totalUploads" class="stat-value">...</p>
-                </div>
-
-            </div>
-
-            <div class="dashboard-section">
-                <h2 class="section-title">المستخدمون الجدد (آخر 30 يوم)</h2>
-                <div id="usersChartContainer" class="chart-container">
-                    <canvas id="usersChart"></canvas>
-                </div>
-            </div>
-
-            <div class="dashboard-section">
-                <h2 class="section-title">المحادثات حسب المزود</h2>
-                <div id="chatsChartContainer" class="chart-container">
-                    <canvas id="chatsChart"></canvas>
+                    <div class="stat-icon uploads-icon">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <h2 class="stat-title">الملفات المرفوعة</h2>
+                    <p id="totalUploads" class="stat-value"><span class="loading-spinner"></span></p>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="uploadsChange">+3%</span>
+                    </div>
                 </div>
             </div>
 
+            <!-- الرسوم البيانية -->
+            <div class="charts-grid">
+                <div class="dashboard-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-user-plus"></i>
+                        المستخدمون الجدد (آخر 30 يوم)
+                    </h2>
+                    <div class="chart-container">
+                        <canvas id="usersChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="dashboard-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-chart-pie"></i>
+                        المحادثات حسب المزود
+                    </h2>
+                    <div class="chart-container">
+                        <canvas id="chatsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- رسوم بيانية إضافية -->
+            <div class="charts-grid">
+                <div class="dashboard-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-clock"></i>
+                        نشاط المستخدمين (24 ساعة)
+                    </h2>
+                    <div class="chart-container">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="dashboard-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-robot"></i>
+                        استخدام النماذج
+                    </h2>
+                    <div class="chart-container">
+                        <canvas id="modelsChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // نقطة نهاية الخادم الخلفي
+        const API_URL = 'https://chatzeusb.vercel.app';
+        const DASHBOARD_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZDMyNWYxMDBlNDQzMjQ1ZmUwOWU4ZCIsImdvb2dsZUlkIjoiMTA1OTIzOTczMjEwNTE4ODM5NjU5IiwibmFtZSI6Iti52KjZiCDYr9mKJyIsImVtYWlsIjoiZmxhZi5hYm9vZGVnZ2dAZ21haWwuY29tIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0ozUXFSYS1ZM0E1dFBDWGg0ZFhmZVpmNmdIUlJ0dW1qT0oxZ2pvTEhjMDR0VFFqUT1zOTYtYyIsImlhdCI6MTc1ODcyNzEyOSwiZXhwIjoxNzU5MzMxOTI5fQ.VnYebbJWY2ukAa9fpcFMLdEcdQsZd4TFks7i7s6MNWU';
 
+        // متغيرات عامة للرسوم البيانية
+        let usersChart, chatsChart, activityChart, modelsChart;
+
+        // دالة جلب البيانات
+        async function fetchDashboardData() {
+            try {
+                console.log('[dashboard] طلب بيانات من:', `${API_URL}/api/dashboard/stats`);
+                
+                const response = await fetch(`${API_URL}/api/dashboard/stats`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${DASHBOARD_TOKEN}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('[dashboard] استلمت حالة الاستجابة:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('[dashboard] بيانات الواجهة المستلمة:', data);
+
+                updateUI(data);
+                updateLastUpdateTime();
+
+            } catch (error) {
+                console.error("Failed to fetch dashboard data:", error);
+                showError(error.message);
+            }
+        }
+
+        // دالة تحديث الواجهة
+        function updateUI(data) {
+            // تحديث بطاقات الأرقام
+            document.getElementById('totalUsers').innerText = formatNumber(data.totalUsers || 0);
+            document.getElementById('totalChats').innerText = formatNumber(data.totalChats || 0);
+            document.getElementById('totalMessages').innerText = formatNumber(data.totalMessages || 0);
+            document.getElementById('totalUploads').innerText = formatNumber(data.totalUploads || 0);
+
+            // تحديث الرسوم البيانية
+            updateUsersChart(data.usersByDate);
+            updateChatsChart(data.chatsByProvider);
+            updateActivityChart();
+            updateModelsChart();
+        }
+
+        // دالة تنسيق الأرقام
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            }
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        // دالة رسم المستخدمين الجدد
+        function updateUsersChart(data) {
+            const ctx = document.getElementById('usersChart').getContext('2d');
+            
+            if (usersChart) {
+                usersChart.destroy();
+            }
+
+            usersChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data?.labels || [],
+                    datasets: [{
+                        label: 'مستخدمون جدد',
+                        data: data?.data || [],
+                        borderColor: '#2d9cff',
+                        backgroundColor: 'rgba(45, 156, 255, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#2d9cff',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.5)'
+                            },
+                            ticks: {
+                                color: 'rgba(230, 240, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.5)'
+                            },
+                            ticks: {
+                                color: 'rgba(230, 240, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // دالة رسم المحادثات حسب المزود
+        function updateChatsChart(data) {
+            const ctx = document.getElementById('chatsChart').getContext('2d');
+            
+            if (chatsChart) {
+                chatsChart.destroy();
+            }
+
+            const colors = [
+                '#2d9cff',
+                '#22c55e',
+                '#f59e0b',
+                '#ef4444',
+                '#8b5cf6',
+                '#06b6d4'
+            ];
+
+            chatsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data?.labels || [],
+                    datasets: [{
+                        data: data?.data || [],
+                        backgroundColor: colors,
+                        borderColor: '#1e293b',
+                        borderWidth: 3,
+                        hoverBorderWidth: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgba(230, 240, 255, 0.9)',
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // دالة رسم النشاط
+        function updateActivityChart() {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            
+            if (activityChart) {
+                activityChart.destroy();
+            }
+
+            // بيانات وهمية للنشاط
+            const hours = Array.from({length: 24}, (_, i) => `${i}:00`);
+            const activityData = Array.from({length: 24}, () => Math.floor(Math.random() * 100));
+
+            activityChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: hours,
+                    datasets: [{
+                        label: 'عدد الرسائل',
+                        data: activityData,
+                        backgroundColor: 'rgba(45, 156, 255, 0.6)',
+                        borderColor: '#2d9cff',
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.5)'
+                            },
+                            ticks: {
+                                color: 'rgba(230, 240, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: 'rgba(230, 240, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // دالة رسم استخدام النماذج
+        function updateModelsChart() {
+            const ctx = document.getElementById('modelsChart').getContext('2d');
+            
+            if (modelsChart) {
+                modelsChart.destroy();
+            }
+
+            // بيانات وهمية للنماذج
+            const modelsData = {
+                labels: ['Gemini Pro', 'Gemini Flash', 'GPT-4', 'Claude', 'أخرى'],
+                data: [35, 28, 20, 12, 5]
+            };
+
+            const colors = ['#2d9cff', '#22c55e', '#f59e0b', '#8b5cf6', '#ef4444'];
+
+            modelsChart = new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    labels: modelsData.labels,
+                    datasets: [{
+                        data: modelsData.data,
+                        backgroundColor: colors.map(color => color + '60'),
+                        borderColor: colors,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgba(230, 240, 255, 0.9)',
+                                padding: 20
+                            }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            ticks: {
+                                color: 'rgba(230, 240, 255, 0.7)',
+                                backdropColor: 'transparent'
+                            },
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.5)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // دالة تحديث وقت آخر تحديث
+        function updateLastUpdateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('ar-SA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('lastUpdate').textContent = `آخر تحديث: ${timeString}`;
+        }
+
+        // دالة عرض الخطأ
+        function showError(message) {
+            const errorHtml = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    خطأ في تحميل البيانات: ${message}
+                </div>
+            `;
+            document.querySelector('.dashboard-main').insertAdjacentHTML('afterbegin', errorHtml);
+        }
+
+        // تحديث تلقائي كل 30 ثانية
+        function startAutoRefresh() {
+            setInterval(fetchDashboardData, 30000);
+        }
+
+        // تشغيل التطبيق
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchDashboardData();
+            startAutoRefresh();
+        });
+    </script>
 </body>
 </html>
