@@ -1,0 +1,1549 @@
+<div class="info-card">
+                        <div class="info-value" id="cpuUsage">23%</div>
+                        <div class="info-label">استخدام المعالج</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-value" id="diskSpace">78GB</div>
+                        <div class="info-label">مساحة القرص المتاحة</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-value" id="activeConnections">142</div>
+                        <div class="info-label">الاتصالات النشطة</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <h3 style="color: var(--accent-color); margin-bottom: 1rem;">متغيرات البيئة</h3>
+                    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 10px; font-family: monospace; font-size: 0.9rem;">
+                        <div>NODE_ENV: production</div>
+                        <div>PORT: 3000</div>
+                        <div>DATABASE_URL: mongodb://***</div>
+                        <div>JWT_SECRET: ***</div>
+                        <div>CLOUDINARY_CLOUD_NAME: ***</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button class="btn-primary" onclick="checkSystemHealth()">
+                        <i class="fas fa-heartbeat"></i>
+                        فحص صحة النظام
+                    </button>
+                    <button class="btn-secondary" onclick="restartSystem()">
+                        <i class="fas fa-power-off"></i>
+                        إعادة تشغيل النظام
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة مفتاح API -->
+    <div class="modal" id="apiKeyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>إضافة مفتاح API جديد</h2>
+                <button class="modal-close" onclick="closeModal('apiKeyModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">اسم المفتاح</label>
+                <input type="text" class="form-input" id="apiKeyName" placeholder="مثال: Gemini Production">
+            </div>
+            <div class="form-group">
+                <label class="form-label">نوع المزود</label>
+                <select class="form-select" id="apiKeyProvider">
+                    <option value="gemini">Google Gemini</option>
+                    <option value="openrouter">OpenRouter</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
+                    <option value="custom">مخصص</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">مفتاح API</label>
+                <input type="password" class="form-input" id="apiKeyValue" placeholder="أدخل مفتاح API">
+            </div>
+            <div class="form-group">
+                <label class="form-label">الوصف (اختياري)</label>
+                <textarea class="form-textarea" id="apiKeyDescription" placeholder="وصف مختصر للمفتاح"></textarea>
+            </div>
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn-primary" onclick="saveApiKey()">
+                    <i class="fas fa-save"></i>
+                    حفظ المفتاح
+                </button>
+                <button class="btn-secondary" onclick="closeModal('apiKeyModal')">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://chatzeusb.vercel.app';
+        const DASHBOARD_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZDMyNWYxMDBlNDQzMjQ1ZmUwOWU4ZCIsImdvb2dsZUlkIjoiMTA1OTIzOTczMjEwNTE4ODM5NjU5IiwibmFtZSI6Iti52KjZiCDYr9mKJyIsImVtYWlsIjoiZmxhZi5hYm9vZGVnZ2dAZ21haWwuY29tIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0ozUXFSYS1ZM0E1dFBDWGg0ZFhmZVpmNmdIUlJ0dW1qT0oxZ2pvTEhjMDR0VFFqUT1zOTYtYyIsImlhdCI6MTc1ODcyNzEyOSwiZXhwIjoxNzU5MzMxOTI5fQ.VnYebbJWY2ukAa9fpcFMLdEcdQsZd4TFks7i7s6MNWU';
+
+        let currentSection = 'general';
+        let apiKeys = [];
+        let backups = [];
+        let systemLogs = [];
+
+        // تحميل البيانات عند تشغيل الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            loadApiKeys();
+            loadBackups();
+            loadSystemLogs();
+            updateSystemInfo();
+            setupEventListeners();
+        });
+
+        // إعداد مستمعي الأحداث
+        function setupEventListeners() {
+            // تحديث قيمة درجة الحرارة
+            document.getElementById('defaultTemperature').addEventListener('input', (e) => {
+                document.getElementById('temperatureValue').textContent = e.target.value;
+            });
+        }
+
+        // عرض قسم محدد
+        function showSection(section) {
+            // إخفاء جميع الأقسام
+            document.querySelectorAll('.settings-content').forEach(content => {
+                content.style.display = 'none';
+            });
+
+            // إظهار القسم المحدد
+            document.getElementById(section).style.display = section === 'general' ? 'grid' : 'block';
+
+            // تحديث أزرار التنقل
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            currentSection = section;
+        }
+
+        // تحميل الإعدادات
+        async function loadSettings() {
+            try {
+                const response = await fetch(`${API_URL}/api/system/settings`, {
+                    headers: {
+                        'Authorization': `Bearer ${DASHBOARD_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const settings = await response.json();
+                    populateSettings(settings);
+                } else {
+                    console.log('استخدام الإعدادات الافتراضية');
+                    populateSettings(getDefaultSettings());
+                }
+            } catch (error) {
+                console.error('خطأ في تحميل الإعدادات:', error);
+                populateSettings(getDefaultSettings());
+            }
+        }
+
+        // ملء الإعدادات في النموذج
+        function populateSettings(settings) {
+            document.getElementById('platformName').value = settings.platformName || 'شات زيوس';
+            document.getElementById('platformDescription').value = settings.platformDescription || 'منصة ذكية للمحادثة مع نماذج الذكاء الاصطناعي المتقدمة';
+            document.getElementById('defaultLanguage').value = settings.defaultLanguage || 'ar';
+            document.getElementById('timezone').value = settings.timezone || 'Asia/Riyadh';
+            document.getElementById('allowRegistration').checked = settings.allowRegistration !== false;
+            document.getElementById('enableWebSearch').checked = settings.enableWebSearch !== false;
+            document.getElementById('enableTeamMode').checked = settings.enableTeamMode !== false;
+            document.getElementById('dailyMessageLimit').value = settings.dailyMessageLimit || 100;
+            document.getElementById('defaultModel').value = settings.defaultModel || 'gemini-1.5-pro';
+            document.getElementById('defaultTemperature').value = settings.defaultTemperature || 0.7;
+            document.getElementById('temperatureValue').textContent = settings.defaultTemperature || 0.7;
+            document.getElementById('defaultSystemPrompt').value = settings.defaultSystemPrompt || 'أنت مساعد ذكي ومفيد. قم بالرد بالعربية ما لم يطلب المستخدم خلاف ذلك.';
+            
+            // إعدادات الأمان
+            document.getElementById('enable2FA').checked = settings.enable2FA || false;
+            document.getElementById('logAllActivities').checked = settings.logAllActivities !== false;
+            document.getElementById('sessionTimeout').value = settings.sessionTimeout || 24;
+            document.getElementById('maxFailedLogins').value = settings.maxFailedLogins || 5;
+        }
+
+        // الحصول على الإعدادات الافتراضية
+        function getDefaultSettings() {
+            return {
+                platformName: 'شات زيوس',
+                platformDescription: 'منصة ذكية للمحادثة مع نماذج الذكاء الاصطناعي المتقدمة',
+                defaultLanguage: 'ar',
+                timezone: 'Asia/Riyadh',
+                allowRegistration: true,
+                enableWebSearch: true,
+                enableTeamMode: true,
+                dailyMessageLimit: 100,
+                defaultModel: 'gemini-1.5-pro',
+                defaultTemperature: 0.7,
+                defaultSystemPrompt: 'أنت مساعد ذكي ومفيد. قم بالرد بالعربية ما لم يطلب المستخدم خلاف ذلك.',
+                enable2FA: false,
+                logAllActivities: true,
+                sessionTimeout: 24,
+                maxFailedLogins: 5
+            };
+        }
+
+        // حفظ الإعدادات العامة
+        async function saveGeneralSettings() {
+            const settings = {
+                platformName: document.getElementById('platformName').value,
+                platformDescription: document.getElementById('platformDescription').value,
+                defaultLanguage: document.getElementById('defaultLanguage').value,
+                timezone: document.getElementById('timezone').value,
+                allowRegistration: document.getElementById('allowRegistration').checked,
+                enableWebSearch: document.getElementById('enableWebSearch').checked,
+                enableTeamMode: document.getElementById('enableTeamMode').checked,
+                dailyMessageLimit: parseInt(document.getElementById('dailyMessageLimit').value),
+                defaultModel: document.getElementById('defaultModel').value,
+                defaultTemperature: parseFloat(document.getElementById('defaultTemperature').value),
+                defaultSystemPrompt: document.getElementById('defaultSystemPrompt').value
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/system/settings`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${DASHBOARD_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    showAlert('تم حفظ الإعدادات بنجاح', 'success');
+                } else {
+                    throw new Error('فشل في حفظ الإعدادات');
+                }
+            } catch (error) {
+                console.error('خطأ في حفظ الإعدادات:', error);
+                showAlert('فشل في حفظ الإعدادات: ' + error.message, 'error');
+            }
+        }
+
+        // حفظ إعدادات الأمان
+        async function saveSecuritySettings() {
+            const securitySettings = {
+                enable2FA: document.getElementById('enable2FA').checked,
+                logAllActivities: document.getElementById('logAllActivities').checked,
+                sessionTimeout: parseInt(document.getElementById('sessionTimeout').value),
+                maxFailedLogins: parseInt(document.getElementById('maxFailedLogins').value)
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/system/security`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${DASHBOARD_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(securitySettings)
+                });
+
+                if (response.ok) {
+                    showAlert('تم حفظ إعدادات الأمان بنجاح', 'success');
+                } else {
+                    throw new Error('فشل في حفظ إعدادات الأمان');
+                }
+            } catch (error) {
+                console.error('خطأ في حفظ إعدادات الأمان:', error);
+                showAlert('فشل في حفظ إعدادات الأمان: ' + error.message, 'error');
+            }
+        }
+
+        // إعادة تعيين إلى الإعدادات الافتراضية
+        function resetToDefaults() {
+            if (confirm('هل أنت متأكد من إعادة تعيين جميع الإعدادات إلى القيم الافتراضية؟')) {
+                populateSettings(getDefaultSettings());
+                showAlert('تم إعادة تعيين الإعدادات إلى القيم الافتراضية', 'warning');
+            }
+        }
+
+        // تحميل مفاتيح API
+        async function loadApiKeys() {
+            try {
+                const response = await fetch(`${API_URL}/api/system/api-keys`, {
+                    headers: {
+                        'Authorization': `Bearer ${DASHBOARD_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    apiKeys = await response.json();
+                } else {
+                    // استخدام بيانات وهمية
+                    apiKeys = generateMockApiKeys();
+                }
+
+                renderApiKeys();
+            } catch (error) {
+                console.error('خطأ في تحميل مفاتيح API:', error);
+                apiKeys = generateMockApiKeys();
+                renderApiKeys();
+            }
+        }
+
+        // عرض مفاتيح API
+        function renderApiKeys() {
+            const container = document.getElementById('apiKeysList');
+            
+            if (apiKeys.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; opacity: 0.7;">
+                        <i class="fas fa-key" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <br>
+                        لا توجد مفاتيح API مضافة
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = apiKeys.map(key => `
+                <div class="api-key-item">
+                    <div class="api-key-info">
+                        <div class="api-key-name">${key.name}</div>
+                        <div class="api-key-status">
+                            ${key.provider} • 
+                            ${key.status === 'active' ? 'نشط' : 'معطل'} • 
+                            آخر استخدام: ${formatDate(key.lastUsed)}
+                        </div>
+                    </div>
+                    <div class="api-key-actions">
+                        <button class="btn-icon btn-test" onclick="testApiKey('${key.id}')" title="اختبار المفتاح">
+                            <i class="fas fa-flask"></i>
+                        </button>
+                        <button class="btn-icon btn-edit" onclick="editApiKey('${key.id}')" title="تعديل">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-delete" onclick="deleteApiKey('${key.id}')" title="حذف">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // إضافة مفتاح API جديد
+        function addApiKey() {
+            document.getElementById('apiKeyModal').style.display = 'flex';
+        }
+
+        // حفظ مفتاح API
+        function saveApiKey() {
+            const keyData = {
+                name: document.getElementById('apiKeyName').value,
+                provider: document.getElementById('apiKeyProvider').value,
+                value: document.getElementById('apiKeyValue').value,
+                description: document.getElementById('apiKeyDescription').value
+            };
+
+            if (!keyData.name || !keyData.value) {
+                showAlert('يرجى ملء جميع الحقول المطلوبة', 'warning');
+                return;
+            }
+
+            // إضافة المفتاح (محاكاة)
+            const newKey = {
+                id: 'key_' + Date.now(),
+                ...keyData,
+                status: 'active',
+                createdAt: new Date().toISOString(),
+                lastUsed: new Date().toISOString()
+            };
+
+            apiKeys.push(newKey);
+            renderApiKeys();
+            closeModal('apiKeyModal');
+            showAlert('تم إضافة مفتاح API بنجاح', 'success');
+
+            // مسح النموذج
+            document.getElementById('apiKeyName').value = '';
+            document.getElementById('apiKeyValue').value = '';
+            document.getElementById('apiKeyDescription').value = '';
+        }
+
+        // حذف مفتاح API
+        function deleteApiKey(keyId) {
+            const key = apiKeys.find(k => k.id === keyId);
+            if (confirm(`هل أنت متأكد من حذف مفتاح "${key.name}"؟`)) {
+                apiKeys = apiKeys.filter(k => k.id !== keyId);
+                renderApiKeys();
+                showAlert('تم حذف مفتاح API', 'success');
+            }
+        }
+
+        // اختبار مفتاح API
+        function testApiKey(keyId) {
+            const key = apiKeys.find(k => k.id === keyId);
+            showAlert(`جاري اختبار مفتاح "${key.name}"...`, 'info');
+            
+            // محاكاة اختبار
+            setTimeout(() => {
+                const success = Math.random() > 0.2; // 80% نجاح
+                if (success) {
+                    showAlert(`مفتاح "${key.name}" يعمل بشكل صحيح`, 'success');
+                    key.status = 'active';
+                } else {
+                    showAlert(`فشل اختبار مفتاح "${key.name}"`, 'error');
+                    key.status = 'error';
+                }
+                renderApiKeys();
+            }, 2000);
+        }
+
+        // تحميل النسخ الاحتياطية
+        function loadBackups() {
+            // بيانات وهمية للنسخ الاحتياطية
+            backups = [
+                {
+                    id: 'backup_1',
+                    name: 'نسخة احتياطية تلقائية',
+                    date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+                    size: '15.2 MB'
+                },
+                {
+                    id: 'backup_2',
+                    name: 'نسخة احتياطية يدوية',
+                    date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    size: '12.8 MB'
+                }
+            ];
+            renderBackups();
+        }
+
+        // عرض النسخ الاحتياطية
+        function renderBackups() {
+            const container = document.getElementById('backupsList');
+            
+            if (backups.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; opacity: 0.7;">
+                        <i class="fas fa-database" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <br>
+                        لا توجد نسخ احتياطية
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = backups.map(backup => `
+                <div class="backup-item">
+                    <div class="backup-info">
+                        <div class="backup-name">${backup.name}</div>
+                        <div class="backup-date">${formatDate(backup.date)}</div>
+                        <div class="backup-size">${backup.size}</div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-icon btn-primary" onclick="downloadBackup('${backup.id}')" title="تحميل">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="btn-icon btn-danger" onclick="deleteBackup('${backup.id}')" title="حذف">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // إنشاء نسخة احتياطية
+        function createBackup() {
+            const includeUsers = document.getElementById('backupUsers').checked;
+            const includeChats = document.getElementById('backupChats').checked;
+            const includeSettings = document.getElementById('backupSettings').checked;
+
+            showAlert('جاري إنشاء النسخة الاحتياطية...', 'info');
+
+            // محاكاة إنشاء نسخة احتياطية
+            setTimeout(() => {
+                const newBackup = {
+                    id: 'backup_' + Date.now(),
+                    name: `نسخة احتياطية ${new Date().toLocaleDateString('ar-SA')}`,
+                    date: new Date().toISOString(),
+                    size: (Math.random() * 20 + 5).toFixed(1) + ' MB'
+                };
+                
+                backups.unshift(newBackup);
+                renderBackups();
+                showAlert('تم إنشاء النسخة الاحتياطية بنجاح', 'success');
+            }, 3000);
+        }
+
+        // تحميل سجلات النظام
+        function loadSystemLogs() {
+            // بيانات وهمية للسجلات
+            systemLogs = [
+                {
+                    id: 1,
+                    level: 'info',
+                    message: 'بدء تشغيل النظام',
+                    details: 'تم تشغيل الخادم بنجاح على المنفذ 3000',
+                    timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString()
+                },
+                {
+                    id: 2,
+                    level: 'warning',
+                    message: 'مفتاح API قارب على النفاد',
+                    details: 'مفتاح Gemini API المتبقي: 15% من الحصة الشهرية',
+                    timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+                },
+                {
+                    id: 3,
+                    level: 'error',
+                    message: 'فشل في محاولة تسجيل دخول',
+                    details: 'IP: 192.168.1.100 - محاولة تسجيل دخول بكلمة مرور خاطئة',
+                    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+                },
+                {
+                    id: 4,
+                    level: 'info',
+                    message: 'تم إنشاء نسخة احتياطية',
+                    details: 'نسخة احتياطية تلقائية - الحجم: 15.2 MB',
+                    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+                }
+            ];
+            renderLogs();
+        }
+
+        // عرض السجلات
+        function renderLogs() {
+            const container = document.getElementById('logsList');
+            const levelFilter = document.getElementById('logLevel').value;
+            
+            let filteredLogs = systemLogs;
+            if (levelFilter !== 'all') {
+                const levels = {
+                    'error': ['error'],
+                    'warning': ['error', 'warning'],
+                    'info': ['error', 'warning', 'info']
+                };
+                filteredLogs = systemLogs.filter(log => levels[levelFilter].includes(log.level));
+            }
+
+            if (filteredLogs.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; opacity: 0.7;">
+                        <i class="fas fa-file-alt" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <br>
+                        لا توجد سجلات للعرض
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredLogs.map(log => `
+                <div class="log-item ${log.level}">
+                    <div class="log-content">
+                        <div class="log-message">${log.message}</div>
+                        <div class="log-details">${log.details}</div>
+                    </div>
+                    <div class="log-time">${formatTime(log.timestamp)}</div>
+                </div>
+            `).join('');
+        }
+
+        // تحديث معلومات النظام
+        function updateSystemInfo() {
+            // بيانات وهمية لمعلومات النظام
+            document.getElementById('systemVersion').textContent = 'v2.1.0';
+            document.getElementById('systemUptime').textContent = '99.9%';
+            document.getElementById('memoryUsage').textContent = (30 + Math.random() * 40).toFixed(0) + '%';
+            document.getElementById('cpuUsage').textContent = (10 + Math.random() * 30).toFixed(0) + '%';
+            document.getElementById('diskSpace').textContent = (70 + Math.random() * 20).toFixed(0) + 'GB';
+            document.getElementById('activeConnections').textContent = (100 + Math.floor(Math.random() * 100));
+        }
+
+        // فحص صحة النظام
+        function checkSystemHealth() {
+            showAlert('جاري فحص صحة النظام...', 'info');
+            
+            setTimeout(() => {
+                const health = Math.random() > 0.1 ? 'جيدة' : 'تحتاج صيانة';
+                const alertType = health === 'جيدة' ? 'success' : 'warning';
+                showAlert(`حالة النظام: ${health}`, alertType);
+                updateSystemInfo();
+            }, 2000);
+        }
+
+        // إعادة تشغيل النظام
+        function restartSystem() {
+            if (confirm('هل أنت متأكد من إعادة تشغيل النظام؟ سيتم قطع الاتصال مؤقتاً.')) {
+                showAlert('جاري إعادة تشغيل النظام...', 'warning');
+                // في التطبيق الحقيقي، هذا سيرسل طلب إعادة التشغيل
+            }
+        }
+
+        // تحديث السجلات
+        function refreshLogs() {
+            loadSystemLogs();
+            showAlert('تم تحديث السجلات', 'success');
+        }
+
+        // مسح السجلات
+        function clearLogs() {
+            if (confirm('هل أنت متأكد من مسح جميع السجلات؟')) {
+                systemLogs = [];
+                renderLogs();
+                showAlert('تم مسح جميع السجلات', 'success');
+            }
+        }
+
+        // إغلاق النافذة المنبثقة
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // عرض رسالة تنبيه
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertId = 'alert_' + Date.now();
+            
+            const alertHTML = `
+                <div id="${alertId}" class="alert ${type}">
+                    <i class="fas fa-${getAlertIcon(type)}"></i>
+                    ${message}
+                </div>
+            `;
+            
+            alertContainer.insertAdjacentHTML('beforeend', alertHTML);
+            
+            // إزالة التنبيه بعد 5 ثوانِ
+            setTimeout(() => {
+                const alert = document.getElementById(alertId);
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        // الحصول على أيقونة التنبيه
+        function getAlertIcon(type) {
+            switch(type) {
+                case 'success': return 'check-circle';
+                case 'warning': return 'exclamation-triangle';
+                case 'error': return 'times-circle';
+                default: return 'info-circle';
+            }
+        }
+
+        // تنسيق التاريخ
+        function formatDate(dateString) {
+            if (!dateString) return 'غير محدد';
+            return new Date(dateString).toLocaleDateString('ar-SA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // تنسيق الوقت
+        function formatTime(dateString) {
+            if (!dateString) return 'غير محدد';
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMinutes = Math.floor((now - date) / (1000 * 60));
+
+            if (diffMinutes < 1) {
+                return 'الآن';
+            } else if (diffMinutes < 60) {
+                return `منذ ${diffMinutes} دقيقة`;
+            } else if (diffMinutes < 1440) {
+                return `منذ ${Math.floor(diffMinutes / 60)} ساعة`;
+            } else {
+                return date.toLocaleDateString('ar-SA', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        }
+
+        // إنشاء بيانات وهمية لمفاتيح API
+        function generateMockApiKeys() {
+            return [
+                {
+                    id: 'key_1',
+                    name: 'Gemini Production',
+                    provider: 'Google Gemini',
+                    status: 'active',
+                    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    lastUsed: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+                },
+                {
+                    id: 'key_2',
+                    name: 'OpenRouter Backup',
+                    provider: 'OpenRouter',
+                    status: 'active',
+                    createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+                    lastUsed: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+                },
+                {
+                    id: 'key_3',
+                    name: 'GPT-4 Testing',
+                    provider: 'OpenAI',
+                    status: 'error',
+                    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    lastUsed: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+                }
+            ];
+        }
+
+        // تحديث دوري لمعلومات النظام
+        setInterval(updateSystemInfo, 30000); // كل 30 ثانية
+
+        // مستمع تغيير مستوى السجلات
+        document.getElementById('logLevel').addEventListener('change', renderLogs);
+
+        // إغلاق النوافذ المنبثقة عند النقر خارجها
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إعدادات النظام - شات زيوس</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #122033;
+            --accent-color: #2d9cff;
+            --accent-hover: #1e7fe0;
+            --text-color: #e6f0ff;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --shadow-light: rgba(45, 156, 255, 0.2);
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --purple-color: #8b5cf6;
+            --cyan-color: #06b6d4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            direction: rtl;
+            text-align: right;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, var(--accent-color), #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .settings-nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 1rem 2rem;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-btn:hover,
+        .nav-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
+        .settings-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .settings-section {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #2d3748 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .settings-section.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(45, 156, 255, 0.05);
+            border: 1px solid rgba(45, 156, 255, 0.2);
+            border-radius: 10px;
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(45, 156, 255, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            right: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(-26px);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-left: 1rem;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .api-key-item {
+            background: rgba(45, 156, 255, 0.05);
+            border: 1px solid rgba(45, 156, 255, 0.2);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .api-key-info {
+            flex: 1;
+        }
+
+        .api-key-name {
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .api-key-status {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .api-key-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-delete {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-test {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .system-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: rgba(45, 156, 255, 0.05);
+            border: 1px solid rgba(45, 156, 255, 0.2);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .backup-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(45, 156, 255, 0.05);
+            border: 1px solid rgba(45, 156, 255, 0.2);
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .backup-info {
+            flex: 1;
+        }
+
+        .backup-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .backup-date {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .backup-size {
+            font-size: 0.8rem;
+            color: var(--accent-color);
+        }
+
+        .log-item {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .log-item.info {
+            background: rgba(45, 156, 255, 0.05);
+            border-color: var(--accent-color);
+        }
+
+        .log-item.warning {
+            background: rgba(245, 158, 11, 0.05);
+            border-color: var(--warning-color);
+        }
+
+        .log-item.error {
+            background: rgba(239, 68, 68, 0.05);
+            border-color: var(--danger-color);
+        }
+
+        .log-content {
+            flex: 1;
+        }
+
+        .log-message {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .log-details {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .log-time {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            white-space: nowrap;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .alert.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .alert.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .settings-content {
+                grid-template-columns: 1fr;
+            }
+
+            .settings-nav {
+                flex-direction: column;
+            }
+
+            .nav-btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <nav class="breadcrumb">
+                <a href="index.html"><i class="fas fa-home"></i> الرئيسية</a>
+                <i class="fas fa-chevron-left"></i>
+                <span>إعدادات النظام</span>
+            </nav>
+            <h1><i class="fas fa-cog"></i> إعدادات النظام</h1>
+            <p>إدارة وتكوين إعدادات المنصة والخدمات</p>
+        </header>
+
+        <nav class="settings-nav">
+            <button class="nav-btn active" onclick="showSection('general')">
+                <i class="fas fa-sliders-h"></i>
+                إعدادات عامة
+            </button>
+            <button class="nav-btn" onclick="showSection('api')">
+                <i class="fas fa-key"></i>
+                مفاتيح API
+            </button>
+            <button class="nav-btn" onclick="showSection('security')">
+                <i class="fas fa-shield-alt"></i>
+                الأمان
+            </button>
+            <button class="nav-btn" onclick="showSection('backup')">
+                <i class="fas fa-database"></i>
+                النسخ الاحتياطي
+            </button>
+            <button class="nav-btn" onclick="showSection('logs')">
+                <i class="fas fa-file-alt"></i>
+                السجلات
+            </button>
+            <button class="nav-btn" onclick="showSection('system')">
+                <i class="fas fa-server"></i>
+                معلومات النظام
+            </button>
+        </nav>
+
+        <div id="alertContainer"></div>
+
+        <!-- الإعدادات العامة -->
+        <div id="general" class="settings-content">
+            <div class="settings-section">
+                <h2 class="section-title">
+                    <i class="fas fa-globe"></i>
+                    الإعدادات الأساسية
+                </h2>
+                <div class="form-group">
+                    <label class="form-label">اسم المنصة</label>
+                    <input type="text" class="form-input" id="platformName" value="شات زيوس">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">وصف المنصة</label>
+                    <textarea class="form-textarea" id="platformDescription">منصة ذكية للمحادثة مع نماذج الذكاء الاصطناعي المتقدمة</textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">اللغة الافتراضية</label>
+                    <select class="form-select" id="defaultLanguage">
+                        <option value="ar">العربية</option>
+                        <option value="en">English</option>
+                        <option value="fr">Français</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">المنطقة الزمنية</label>
+                    <select class="form-select" id="timezone">
+                        <option value="Asia/Riyadh">الرياض (UTC+3)</option>
+                        <option value="Asia/Dubai">دبي (UTC+4)</option>
+                        <option value="Africa/Cairo">القاهرة (UTC+2)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2 class="section-title">
+                    <i class="fas fa-users"></i>
+                    إعدادات المستخدمين
+                </h2>
+                <div class="form-group">
+                    <label class="form-label">
+                        <span>السماح بالتسجيل الجديد</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="allowRegistration" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <span>تفعيل البحث على الويب</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enableWebSearch" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <span>تفعيل وضع الفريق</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enableTeamMode" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الحد الأقصى للرسائل يومياً</label>
+                    <input type="number" class="form-input" id="dailyMessageLimit" value="100" min="1">
+                </div>
+            </div>
+
+            <div class="settings-section full-width">
+                <h2 class="section-title">
+                    <i class="fas fa-robot"></i>
+                    إعدادات النماذج الافتراضية
+                </h2>
+                <div class="form-group">
+                    <label class="form-label">النموذج الافتراضي</label>
+                    <select class="form-select" id="defaultModel">
+                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                        <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                        <option value="gpt-4">GPT-4</option>
+                        <option value="claude-3">Claude 3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">درجة الحرارة الافتراضية</label>
+                    <input type="range" class="form-input" id="defaultTemperature" min="0" max="1" step="0.1" value="0.7">
+                    <span id="temperatureValue">0.7</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">البرومبت النظام الافتراضي</label>
+                    <textarea class="form-textarea" id="defaultSystemPrompt">أنت مساعد ذكي ومفيد. قم بالرد بالعربية ما لم يطلب المستخدم خلاف ذلك.</textarea>
+                </div>
+            </div>
+
+            <div class="settings-section full-width" style="text-align: center; padding: 2rem;">
+                <button class="btn-primary" onclick="saveGeneralSettings()">
+                    <i class="fas fa-save"></i>
+                    حفظ الإعدادات
+                </button>
+                <button class="btn-secondary" onclick="resetToDefaults()">
+                    <i class="fas fa-undo"></i>
+                    إعادة تعيين
+                </button>
+            </div>
+        </div>
+
+        <!-- إدارة مفاتيح API -->
+        <div id="api" class="settings-content" style="display: none;">
+            <div class="settings-section full-width">
+                <h2 class="section-title">
+                    <i class="fas fa-key"></i>
+                    مفاتيح API
+                </h2>
+                <button class="btn-primary" onclick="addApiKey()" style="margin-bottom: 2rem;">
+                    <i class="fas fa-plus"></i>
+                    إضافة مفتاح جديد
+                </button>
+
+                <div id="apiKeysList">
+                    <!-- سيتم ملؤها ديناميكياً -->
+                </div>
+            </div>
+        </div>
+
+        <!-- إعدادات الأمان -->
+        <div id="security" class="settings-content" style="display: none;">
+            <div class="settings-section">
+                <h2 class="section-title">
+                    <i class="fas fa-lock"></i>
+                    أمان النظام
+                </h2>
+                <div class="form-group">
+                    <label class="form-label">
+                        <span>تفعيل التحقق بخطوتين</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enable2FA">
+                            <span class="slider"></span>
+                        </label>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <span>تسجيل جميع الأنشطة</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="logAllActivities" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">مدة انتهاء الجلسة (ساعات)</label>
+                    <input type="number" class="form-input" id="sessionTimeout" value="24" min="1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">عدد محاولات تسجيل الدخول الفاشلة</label>
+                    <input type="number" class="form-input" id="maxFailedLogins" value="5" min="1">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2 class="section-title">
+                    <i class="fas fa-ban"></i>
+                    قائمة المحظورين
+                </h2>
+                <div class="form-group">
+                    <label class="form-label">حظر عنوان IP</label>
+                    <input type="text" class="form-input" id="blockIp" placeholder="192.168.1.1">
+                </div>
+                <button class="btn-danger">
+                    <i class="fas fa-ban"></i>
+                    حظر IP
+                </button>
+            </div>
+
+            <div class="settings-section full-width">
+                <button class="btn-primary" onclick="saveSecuritySettings()">
+                    <i class="fas fa-save"></i>
+                    حفظ إعدادات الأمان
+                </button>
+            </div>
+        </div>
+
+        <!-- النسخ الاحتياطي -->
+        <div id="backup" class="settings-content" style="display: none;">
+            <div class="settings-section">
+                <h2 class="section-title">
+                    <i class="fas fa-download"></i>
+                    إنشاء نسخة احتياطية
+                </h2>
+                <div class="form-group">
+                    <label class="form-label">
+                        <span>تضمين بيانات المستخدمين</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="backupUsers" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <span>تضمين المحادثات</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="backupChats" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <span>تضمين الإعدادات</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="backupSettings" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </label>
+                </div>
+                <button class="btn-primary" onclick="createBackup()">
+                    <i class="fas fa-download"></i>
+                    إنشاء نسخة احتياطية
+                </button>
+            </div>
+
+            <div class="settings-section">
+                <h2 class="section-title">
+                    <i class="fas fa-history"></i>
+                    النسخ الاحتياطية السابقة
+                </h2>
+                <div id="backupsList">
+                    <!-- سيتم ملؤها ديناميكياً -->
+                </div>
+            </div>
+        </div>
+
+        <!-- السجلات -->
+        <div id="logs" class="settings-content" style="display: none;">
+            <div class="settings-section full-width">
+                <h2 class="section-title">
+                    <i class="fas fa-file-alt"></i>
+                    سجلات النظام
+                </h2>
+                <div style="margin-bottom: 1rem;">
+                    <select class="form-select" id="logLevel" style="width: 200px; display: inline-block; margin-left: 1rem;">
+                        <option value="all">جميع السجلات</option>
+                        <option value="error">الأخطاء فقط</option>
+                        <option value="warning">التحذيرات والأخطاء</option>
+                        <option value="info">معلومات وما فوق</option>
+                    </select>
+                    <button class="btn-secondary" onclick="refreshLogs()">
+                        <i class="fas fa-sync-alt"></i>
+                        تحديث
+                    </button>
+                    <button class="btn-danger" onclick="clearLogs()">
+                        <i class="fas fa-trash"></i>
+                        مسح السجلات
+                    </button>
+                </div>
+                <div id="logsList">
+                    <!-- سيتم ملؤها ديناميكياً -->
+                </div>
+            </div>
+        </div>
+
+        <!-- معلومات النظام -->
+        <div id="system" class="settings-content" style="display: none;">
+            <div class="settings-section full-width">
+                <h2 class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    معلومات النظام
+                </h2>
+                <div class="system-info">
+                    <div class="info-card">
+                        <div class="info-value" id="systemVersion">v2.1.0</div>
+                        <div class="info-label">إصدار النظام</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-value" id="systemUptime">99.9%</div>
+                        <div class="info-label">وقت التشغيل</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-value" id="memoryUsage">45%</div>
+                        <div class="info-label">استخدام الذاكرة</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-value" id="cpuUsage">23%</div
